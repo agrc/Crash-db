@@ -72,7 +72,7 @@ setup(
         "docopt==0.6.2"
     ],
     dependency_links=[
-        "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe"
+        "http://iweb.dl.sourceforge.net/project/ceodbc/2.0.1/ceODBC-2.0.1.tar.gz"
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],

@@ -25,7 +25,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_process(self):
         raise SkipTest
-        self.patient.process(join('.', 'tests', 'data'))
+        self.patient.process(join('.', 'data'))
 
     def test_etl_rollup(self):
         row = {
@@ -109,6 +109,8 @@ class TestDbSeeder(unittest.TestCase):
         }
 
         expected = [
+            # shape:
+            (450007.0, 4466748.0),
             # 'id':
             10376162,
             # 'date':
@@ -134,7 +136,7 @@ class TestDbSeeder(unittest.TestCase):
             # 'collision_type':
             None,
             # 'severity':
-            'No Injury/PDO',
+            'None',
             # 'case_number':
             '11UT0004',
             # 'officer_name':
@@ -197,12 +199,12 @@ class TestDbSeeder(unittest.TestCase):
         self.assertRaises(Exception, self.patient._etl_row, 'wrong')
 
     def test_get_files_without_trailing_slashes(self):
-        actual = self.patient._get_files(join('.', 'tests', 'data'))
+        actual = self.patient._get_files(join('.', 'data'))
 
         self.assertEqual(len(actual), 3)
 
     def test_get_files_with_trailing_slashes(self):
-        actual = self.patient._get_files('.{0}tests{0}data{0}'.format(sep))
+        actual = self.patient._get_files('.{0}data{0}'.format(sep))
 
         self.assertEqual(len(actual), 3)
 
@@ -226,7 +228,7 @@ class TestDbSeeder(unittest.TestCase):
         self.assertIsNone(actual)
 
     def test_get_lengths(self):
-        actual = self.patient.get_lengths(join('.', 'tests', 'data'))
+        actual = self.patient.get_lengths(join('.', 'data'))
 
         expected = {
             'CASE_NUMBER': 92,

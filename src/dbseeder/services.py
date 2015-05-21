@@ -96,9 +96,9 @@ class BrickLayer(object):
                                     'connections',
                                     creds['sde_connection_path'])
             self.crash_table = os.path.join(script_dir,
-                                    'connections',
-                                    creds['sde_connection_path'],
-                                    'DDACTS.DDACTSadmin.CrashLocation')
+                                            'connections',
+                                            creds['sde_connection_path'],
+                                            'DDACTS.DDACTSadmin.CrashLocation')
 
     def insert_rows_with_arcpy(self, table_name, rows):
         if table_name.lower() not in self.insert_statements.keys():
