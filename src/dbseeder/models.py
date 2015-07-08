@@ -434,10 +434,10 @@ class Lookup(object):
     }
 
     severity = {
-        1: 'None',
-        2: 'Non-Fatal',
-        3: 'Non-Fatal',
-        4: 'Non-Fatal',
+        1: 'No Injury',
+        2: 'Injury',
+        3: 'Injury',
+        4: 'Injury',
         5: 'Fatal',
         88: None,
         89: None
