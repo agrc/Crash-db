@@ -5,11 +5,15 @@ Crash DB
 
 A db seeder etl tool for crash data.
 
+### Install
+1. git clone this repo
+1. cd into folder and run `./setup.py install`
+1. download and install [ceODBC 2.0.1 32 bit for python 2.7](http://sourceforge.net/projects/ceodbc/files/2.0.1/ceODBC-2.0.1.win32-py2.7.msi/download)
+
 ### Usage
 1. Get the csv's to use.
 1. Create a .sde connection to the database you want to seed. Place them in dbseeder/connections
 1. Fill out secrets.py. Use the secrets.sample.py as an example.
-1. Update the __main__.py line 31 to be dev stage or prod.
 1. run `python -m dbseeder create <configuration>` where `<configuration>` is `dev, stage, prod` to create the database
 1. run `python -m dbseeder seed <source> <configuration` where `<source>` is the path to the csv's `path/to/csv's` and `<configuration>` is `dev, stage, prod`. In dev, this is `dbseeder\data\csv`
 
