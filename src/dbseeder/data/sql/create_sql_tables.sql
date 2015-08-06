@@ -21,6 +21,7 @@ CREATE TABLE [Rollup](
 	[teenager] [bit] NULL,
 	[elder] [bit] NULL,
 	[dark] [bit] NULL,
+	[unrestrained] [bit] NULL,
  CONSTRAINT [PK_Rollup] PRIMARY KEY CLUSTERED
 (
 	[id] ASC

@@ -123,6 +123,10 @@ class Schema(object):
         'WILD_ANIMAL_RELATED': {
             'type': 'bit',
             'map': 'animal_wild'
+        },
+        'UNRESTRAINED': {
+            'type': 'bit',
+            'map': 'unrestrained'
         }
     }
 
@@ -143,14 +147,15 @@ class Schema(object):
             d['commercial_vehicle'],
             d['teenager'],
             d['elder'],
-            d['dark']
+            d['dark'],
+            d['unrestrained']
         ]
 
     rollup_input_keys = rollup.keys()
     rollup_etl_keys = map(lambda x: x['map'], rollup.values())
 
     crash = {
-        'CASE_NUMBER': {
+        'CASE_NUMBER(CONFIDENTIAL)': {
             'type': 'string',
             'map': 'case_number'
         },
@@ -209,11 +214,11 @@ class Schema(object):
             'type': 'int',
             'map': 'crash_month'
         },
-        'OFFICER_DEPARTMENT_CODE': {
+        'OFFICER_DEPARTMENT_CODE(CONFIDENTIAL)': {
             'type': 'string',
             'map': 'officer_department'
         },
-        'OFFICER_DEPARTMENT_NAME': {
+        'OFFICER_DEPARTMENT_NAME(CONFIDENTIAL)': {
             'type': 'string',
             'map': 'officer_name'
         },
@@ -222,9 +227,14 @@ class Schema(object):
             'map': 'road_condition',
             'lookup': 'road_condition'
         },
-        'ROUTE_NUMBER': {
+        'ROUTE': {
             'type': 'int',
             'map': 'route_number'
+        },
+        'ROADWAY_TYPE_CD': {
+            'type': 'string',
+            'map': 'road_type',
+            'lookup': 'road_type'
         },
         'UTM_X': {
             'type': 'float',
@@ -271,6 +281,7 @@ class Schema(object):
             d['officer_name'],
             d['officer_department'],
             d['road_name'],
+            d['road_type'],
             d['route_number'],
             d['milepost'],
             d['city'],
@@ -297,6 +308,7 @@ class Schema(object):
                     'officer_name',
                     'officer_department',
                     'road_name',
+                    'road_type',
                     'route_number',
                     'milepost',
                     'city',
@@ -349,6 +361,13 @@ class Lookup(object):
         96: None,
         97: None,
         99: None
+    }
+
+    road_type = {
+        'M': 'Mainline',
+        'R': 'Ramp',
+        'X': 'Other',
+        'C': 'Collector'
     }
 
     event = {
