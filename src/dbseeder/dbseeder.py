@@ -46,8 +46,19 @@ class DbSeeder(object):
             start = timeit.default_timer()
             items = []
 
-            with open(file, 'r') as csv_file:
-                reader = csv.DictReader(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+            #: remove null bytes from csv
+            fi = open(file, 'rb')
+            data = fi.read()
+            fi.close()
+            fo = open(file, 'wb')
+            data = data.replace('\xff', '')
+            data = data.replace('\xfe', '')
+            fo.write(data.replace('\x00', ''))
+
+            fo.close()
+
+            with open(file, 'rb') as csv_file:
+                reader = csv.DictReader(csv_file, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
                 for row in reader:
                     items.append(self._etl_row(table_name, row))
@@ -176,6 +187,7 @@ class DbSeeder(object):
         sr = os.path.join(script_dir, 'data/26912.prj')
         creds = secrets.dev
 
+        #: create sql drive and rollup tables
         with open(os.path.join(script_dir, where[0]), 'r') as f:
             sql = f.read()
 
@@ -196,7 +208,8 @@ class DbSeeder(object):
         except Exception, e:
             raise e
         finally:
-            del c
+            if c:
+                del c
 
         print 'created sql tables'
 
@@ -237,6 +250,7 @@ class DbSeeder(object):
             ['officer_name', 'TEXT', 'NULLABLE', 100],
             ['officer_department', 'TEXT', 'NULLABLE', 100],
             ['road_name', 'TEXT', 'NULLABLE', 100],
+            ['road_type', 'TEXT', 'NULLABLE', 20],
             ['route_number', 'LONG', 'NULLABLE'],
             ['milepost', 'DOUBLE', 'NULLABLE'],
             ['city', 'TEXT', 'NULLABLE', 50],
