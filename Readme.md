@@ -15,7 +15,7 @@ A db seeder etl tool for crash data.
 1. Create a .sde connection to the database you want to seed. Place them in dbseeder/connections
 1. Fill out secrets.py. Use the secrets.sample.py as an example.
 1. run `python -m dbseeder create <configuration>` where `<configuration>` is `dev, stage, prod` to create the database
-1. run `python -m dbseeder seed <source> <configuration` where `<source>` is the path to the csv's `path/to/csv's` and `<configuration>` is `dev, stage, prod`. In dev, this is `dbseeder\data\csv`
+1. run `python -m dbseeder seed <source> <configuration>` where `<source>` is the path to the csv's `path/to/csv's` and `<configuration>` is `dev, stage, prod`. In dev, this is `dbseeder\data\csv`
 
 ### Tests
 `tox`
