@@ -74,6 +74,8 @@ class DbSeeder(object):
         #: delete seeded feature
         self.brick_layer.seed_features(arcpy, create=False)
 
+        self.create_info_json(creds)
+
     def get_lengths(self, location):
         files = self._get_files(location)
         items = {
@@ -317,3 +319,24 @@ class DbSeeder(object):
 
         except arcpy.ExecuteError, e:
             print(e.message)
+
+    def create_info_json(self, creds):
+        script_dir = os.path.dirname(__file__)
+
+        sde = os.path.join(script_dir,
+                           'connections',
+                           creds['sde_connection_path'])
+
+        sql = 'SELECT max(CAST( CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) + RIGHT(\'0\' + CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date, min(CAST( CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) + RIGHT(\'0\' + CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'
+        try:
+            c = arcpy.ArcSDESQLExecute(sde)
+            max_min = c.execute(sql)
+            max_min = max_min[0]
+        except Exception, e:
+            print(e)
+            raise e
+
+        with open('dates.js', 'w') as outfile:
+            template = 'define([], function() {{return {{minDate: \'{}\', maxDate: \'{}\'}};}});'.format(max_min[1], max_min[0])
+
+            outfile.write(template)
