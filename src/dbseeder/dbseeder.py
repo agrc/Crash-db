@@ -35,6 +35,8 @@ class DbSeeder(object):
         self.brick_layer = BrickLayer(creds=creds)
         files = self._get_files(location)
 
+        self.truncate_tables(creds)
+
         #: seed feature type
         self.brick_layer.seed_features(arcpy, create=True)
 
@@ -285,3 +287,33 @@ class DbSeeder(object):
 
         arcpy.AddField_management(table, field[0], field[1],
                                   field_is_nullable=field[2])
+
+    def truncate_tables(self, creds):
+        script_dir = os.path.dirname(__file__)
+
+        sde = os.path.join(script_dir,
+                           'connections',
+                           creds['sde_connection_path'])
+
+        with open(os.path.join(script_dir, 'data/sql/truncate.sql'), 'r') as f:
+            sql = f.read()
+
+        print('truncating tabular tables')
+        try:
+            c = arcpy.ArcSDESQLExecute(sde)
+            c.execute(sql)
+        except Exception, e:
+            raise e
+        finally:
+            if c:
+                del c
+
+        arcpy.env.overwriteOutput = True
+        arcpy.env.workspace = sde
+
+        print 'truncating spatial tables'
+        try:
+            arcpy.TruncateTable_management('CrashLocation')
+
+        except arcpy.ExecuteError, e:
+            print(e.message)
