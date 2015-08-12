@@ -17,8 +17,10 @@ import re
 import secrets
 import timeit
 from models import Schema, Lookup
-from os.path import basename, splitext, join
+from os.path import basename, splitext, join, sep
+from os import environ
 from services import Caster, BrickLayer
+from shutil import copy
 
 
 class DbSeeder(object):
@@ -27,8 +29,6 @@ class DbSeeder(object):
         super(DbSeeder, self).__init__()
 
     def process(self, location, who):
-        print('DO NOT FORGET TO UPDATE THE POINTS.JSON')
-
         creds = secrets.dev
         if who == 'stage':
             creds = secrets.stage
@@ -79,6 +79,7 @@ class DbSeeder(object):
 
         self.create_info_json(creds)
         self.create_points_json(creds)
+        self.place_files(who)
 
     def get_lengths(self, location):
         files = self._get_files(location)
@@ -405,3 +406,14 @@ class DbSeeder(object):
 
             end = timeit.default_timer()
             print 'processing time: {}'.format(end - start)
+
+    def place_files(self, who):
+        place = join(environ.get("HOMEDRIVE"), sep, 'Projects', 'GitHub', 'Crash-web', 'src')
+
+        if who == 'stage':
+            place = join(environ.get("HOMEDRIVE"), sep, 'inetpub', 'wwwroot', 'crash')
+        elif who == 'prod':
+            place = 'not sure yet'
+
+        copy('points.json', place)
+        copy('dates.js', join(place, 'app'))
