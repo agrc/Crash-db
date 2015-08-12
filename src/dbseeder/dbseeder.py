@@ -18,9 +18,9 @@ import secrets
 import timeit
 from models import Schema, Lookup
 from os.path import basename, splitext, join, sep
-from os import environ
+from os import environ, makedirs
 from services import Caster, BrickLayer
-from shutil import copy
+from shutil import copy, rmtree
 
 
 class DbSeeder(object):
@@ -129,6 +129,19 @@ class DbSeeder(object):
 
         if len(files) < 1:
             raise Exception(location, 'No csv files found.')
+
+        script_dir = os.path.dirname(__file__)
+        script_dir = join(script_dir, 'data', 'local')
+
+        rmtree(script_dir, ignore_errors=True)
+        makedirs(script_dir)
+
+        def copy_files_local(file):
+            copy(file, script_dir)
+
+        map(copy_files_local, files)
+
+        files = glob.glob(join(script_dir, '*.csv'))
 
         return files
 
