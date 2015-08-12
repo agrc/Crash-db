@@ -390,9 +390,9 @@ class DbSeeder(object):
                 dx = decimal.Decimal(x).as_tuple()
                 dy = decimal.Decimal(y).as_tuple()
 
-                if abs(dx.exponent) == 0:
+                if dx.exponent == 0:
                     x = int(x)
-                if abs(dy.exponent) == 0:
+                if dy.exponent == 0:
                     y = int(y)
 
                 points['points'].append([crash[0], x, y])
