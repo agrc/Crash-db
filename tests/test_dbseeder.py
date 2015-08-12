@@ -43,7 +43,8 @@ class TestDbSeeder(unittest.TestCase):
             'OVERTURN_ROLLOVER': 'N',
             'PEDESTRIAN_INVOLVED': 'N',
             'TEENAGE_DRIVER_INVOLVED': 'N',
-            'WILD_ANIMAL_RELATED': 'N'
+            'WILD_ANIMAL_RELATED': 'N',
+            'UNRESTRAINED': 'Y'
         }
         expected = [
             # 'id':
@@ -75,7 +76,9 @@ class TestDbSeeder(unittest.TestCase):
             # 'elder':
             0,
             # 'dark':
-            0
+            0,
+            #: unrestrained
+            1
         ]
 
         actual = self.patient._etl_row('rollup', row)
@@ -83,7 +86,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_etl_crash(self):
         row = {
-            'CASE_NUMBER': '11UT0004',
+            'CASE_NUMBER(CONFIDENTIAL)': '11UT0004',
             'CITY': '',
             'COUNTY_NAME': 'UTAH',
             'CRASH_DATETIME': '2011-01-01 12:09:00',
@@ -97,10 +100,11 @@ class TestDbSeeder(unittest.TestCase):
             'MILEPOINT': '12.2',
             'MINUTE': '9',
             'MONTH': '1',
-            'OFFICER_DEPARTMENT_CODE': 'UTUHP1000',
-            'OFFICER_DEPARTMENT_NAME': 'UHPORE.UT.USA',
+            'OFFICER_DEPARTMENT_CODE(CONFIDENTIAL)': 'UTUHP1000',
+            'OFFICER_DEPARTMENT_NAME(CONFIDENTIAL)': 'UHPORE.UT.USA',
             'ROADWAY_SURF_CONDITION_ID': '5',
-            'ROUTE_NUMBER': '189',
+            'ROUTE': '189',
+            'ROADWAY_TYPE_CD': 'M',
             'UTM_X': '450007',
             'UTM_Y': '4466748',
             'WEATHER_CONDITION_ID': '1',
@@ -136,7 +140,7 @@ class TestDbSeeder(unittest.TestCase):
             # 'collision_type':
             None,
             # 'severity':
-            'None',
+            'No Injury',
             # 'case_number':
             '11UT0004',
             # 'officer_name':
@@ -145,6 +149,8 @@ class TestDbSeeder(unittest.TestCase):
             'UTUHP1000',
             # 'road_name':
             'SR 189',
+            #: road_type
+            'Mainline',
             # 'route_number':
             189,
             # 'milepost':
@@ -231,12 +237,12 @@ class TestDbSeeder(unittest.TestCase):
         actual = self.patient.get_lengths(join('.', 'data'))
 
         expected = {
-            'CASE_NUMBER': 92,
+            'CASE_NUMBER(CONFIDENTIAL)': 92,
             'CITY': 11,
             'COUNTY_NAME': 9,
             'MAIN_ROAD_NAME': 11,
-            'OFFICER_DEPARTMENT_CODE': 9,
-            'OFFICER_DEPARTMENT_NAME': 13
+            'OFFICER_DEPARTMENT_CODE(CONFIDENTIAL)': 9,
+            'OFFICER_DEPARTMENT_NAME(CONFIDENTIAL)': 13
         }
 
         self.assertEqual(actual['crash'], expected)
