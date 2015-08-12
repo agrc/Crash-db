@@ -58,3 +58,5 @@ src/**/*.csv
 *.sublime-workspace
 *.sde
 src/dbseeder/secrets.py
+src/dates.js
+src/points.json

@@ -9,10 +9,13 @@ the dbseeder module
 
 import arcpy
 import csv
+import decimal
 import glob
+import json
 import os
-import timeit
+import re
 import secrets
+import timeit
 from models import Schema, Lookup
 from os.path import basename, splitext, join
 from services import Caster, BrickLayer
@@ -75,6 +78,7 @@ class DbSeeder(object):
         self.brick_layer.seed_features(arcpy, create=False)
 
         self.create_info_json(creds)
+        self.create_points_json(creds)
 
     def get_lengths(self, location):
         files = self._get_files(location)
@@ -321,13 +325,18 @@ class DbSeeder(object):
             print(e.message)
 
     def create_info_json(self, creds):
+        print('creating dates.js')
+        start = timeit.default_timer()
         script_dir = os.path.dirname(__file__)
 
         sde = os.path.join(script_dir,
                            'connections',
                            creds['sde_connection_path'])
 
-        sql = 'SELECT max(CAST( CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) + RIGHT(\'0\' + CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date, min(CAST( CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) + RIGHT(\'0\' + CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'
+        sql = '''SELECT max(CAST(CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) +
+              RIGHT(\'0\' + CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date,
+              min(CAST(CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) + RIGHT(\'0\' +
+              CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'''
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             max_min = c.execute(sql)
@@ -335,8 +344,64 @@ class DbSeeder(object):
         except Exception, e:
             print(e)
             raise e
+        finally:
+            if c:
+                del c
 
         with open('dates.js', 'w') as outfile:
             template = 'define([], function() {{return {{minDate: \'{}\', maxDate: \'{}\'}};}});'.format(max_min[1], max_min[0])
 
             outfile.write(template)
+
+        print 'processing time: {}'.format(timeit.default_timer() - start)
+
+    def create_points_json(self, creds):
+        print('creating new points.json')
+
+        start = timeit.default_timer()
+        script_dir = os.path.dirname(__file__)
+
+        sde = os.path.join(script_dir,
+                           'connections',
+                           creds['sde_connection_path'])
+
+        pattern = re.compile(r'\s+')
+        points = {
+            'points': []
+        }
+
+        sql = 'SELECT [OBJECTID],[Shape].STX as x,[Shape].STY as y FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'
+
+        try:
+            c = arcpy.ArcSDESQLExecute(sde)
+            result = c.execute(sql)
+        except Exception, e:
+            print(e)
+            raise e
+        finally:
+            if c:
+                del c
+
+        def append_point(crash):
+            if crash[1] > 0 and crash[2] > 0:
+                x = round(crash[1], 2)
+                y = round(crash[2], 2)
+
+                dx = decimal.Decimal(x).as_tuple()
+                dy = decimal.Decimal(y).as_tuple()
+
+                if abs(dx.exponent) == 0:
+                    x = int(x)
+                if abs(dy.exponent) == 0:
+                    y = int(y)
+
+                points['points'].append([crash[0], x, y])
+
+        with open('points.json', 'w') as outfile:
+            map(append_point, result)
+
+            content = re.sub(pattern, '', json.dumps(points))
+            outfile.write(content)
+
+            end = timeit.default_timer()
+            print 'processing time: {}'.format(end - start)
