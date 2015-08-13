@@ -18,9 +18,10 @@ import secrets
 import timeit
 from models import Schema, Lookup
 from os.path import basename, splitext, join, sep
-from os import environ, makedirs
+from os import environ, makedirs, remove
 from services import Caster, BrickLayer
-from shutil import copy, rmtree
+from shutil import copy, copyfile, rmtree
+from time import strftime
 
 
 class DbSeeder(object):
@@ -29,6 +30,8 @@ class DbSeeder(object):
         super(DbSeeder, self).__init__()
 
     def process(self, location, who):
+        print('started at {}'.format(strftime('%c')))
+
         creds = secrets.dev
         if who == 'stage':
             creds = secrets.stage
@@ -77,9 +80,11 @@ class DbSeeder(object):
         #: delete seeded feature
         self.brick_layer.seed_features(arcpy, create=False)
 
-        self.create_info_json(creds)
+        self.create_dates_js(creds)
         self.create_points_json(creds)
         self.place_files(who)
+
+        print('finished')
 
     def get_lengths(self, location):
         files = self._get_files(location)
@@ -338,7 +343,7 @@ class DbSeeder(object):
         except arcpy.ExecuteError, e:
             print(e.message)
 
-    def create_info_json(self, creds):
+    def create_dates_js(self, creds):
         print('creating dates.js')
         start = timeit.default_timer()
         script_dir = os.path.dirname(__file__)
@@ -426,7 +431,20 @@ class DbSeeder(object):
         if who == 'stage':
             place = join(environ.get("HOMEDRIVE"), sep, 'inetpub', 'wwwroot', 'crash')
         elif who == 'prod':
-            place = 'not sure yet'
+            place = join('w:', sep, 'inetpub', 'wwwroot', 'crash')
 
-        copy('points.json', place)
-        copy('dates.js', join(place, 'app'))
+        points = join(place, 'points.json')
+        dates = join(place, 'app', 'resources', 'dates.js')
+
+        try:
+            remove(points)
+        except:
+            pass
+
+        try:
+            remove(dates)
+        except:
+            pass
+
+        copyfile('points.json', points)
+        copyfile('dates.js', dates)

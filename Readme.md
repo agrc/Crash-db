@@ -28,3 +28,13 @@ A db seeder etl tool for crash data.
 `ImportError: No module named x`. This means that x is not installed. Install the windows 64 bit python 2.7 module. If is installed and you are in the tox environment you need to allow global site packages. For example update `C:\Users\agrc-arcgis\Envs\crash\Lib\no-global-site-packags.txt` to `allow-global-site-packages.txt`. ceODBC is not in pip.
 
 `_csv.Error: line contains NULL byte`. CSV's need to be resaved.
+
+### Deployment
+1. checkout repo
+1. create `secrets.py`
+1. make sure `pip` is installed
+1. install 64 bit ceODBC
+1. create `connections` folder within `src\dbseeder`
+1. run `setup.py install`
+1. put connections and data folder inside `python\Lib\site-packages\crash_dbseeder.egg\dbseeder` if it's not already there
+1.
