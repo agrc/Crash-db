@@ -344,7 +344,7 @@ class DbSeeder(object):
             print(e.message)
 
     def create_dates_js(self, creds):
-        print('creating dates.js')
+        print('creating dates.json')
         start = timeit.default_timer()
         script_dir = os.path.dirname(__file__)
 
@@ -367,8 +367,8 @@ class DbSeeder(object):
             if c:
                 del c
 
-        with open('dates.js', 'w') as outfile:
-            template = 'define([], function() {{return {{minDate: \'{}\', maxDate: \'{}\'}};}});'.format(max_min[1], max_min[0])
+        with open('dates.json', 'w') as outfile:
+            template = '{{"minDate": "{}", "maxDate": "{}"}}'.format(max_min[1], max_min[0])
 
             outfile.write(template)
 
@@ -434,7 +434,7 @@ class DbSeeder(object):
             place = join('w:', sep, 'inetpub', 'wwwroot', 'crash')
 
         points = join(place, 'points.json')
-        dates = join(place, 'app', 'resources', 'dates.js')
+        dates = join(place, 'app', 'resources', 'dates.json')
 
         try:
             remove(points)
@@ -447,4 +447,4 @@ class DbSeeder(object):
             pass
 
         copyfile('points.json', points)
-        copyfile('dates.js', dates)
+        copyfile('dates.json', dates)
