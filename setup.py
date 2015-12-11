@@ -40,7 +40,7 @@ class Tox(TestCommand):
 
 setup(
     name="crash-dbseeder",
-    version="1.0.1",
+    version="1.0.2",
     license="MIT",
     description="ETL Crash Data",
     long_description="",
