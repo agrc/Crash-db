@@ -352,10 +352,9 @@ class DbSeeder(object):
                            'connections',
                            creds['sde_connection_path'])
 
-        sql = '''SELECT max(CAST(CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) +
-              RIGHT(\'0\' + CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date,
-              min(CAST(CAST(crash_year AS VARCHAR(4)) + RIGHT(\'0\' + CAST(crash_month AS VARCHAR(2)), 2) + RIGHT(\'0\' +
-              CAST(crash_day AS VARCHAR(2)), 2) AS DATETIME)) as max_date FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'''
+        sql = '''SELECT max(crash_date) as max_date, min(crash_date) as max_date
+        FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'''
+
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             max_min = c.execute(sql)
@@ -368,7 +367,7 @@ class DbSeeder(object):
                 del c
 
         with open('dates.json', 'w') as outfile:
-            template = '{{"minDate": "{}", "maxDate": "{}"}}'.format(max_min[1], max_min[0])
+            template = '{{"minDate": "{}", "maxDate": "{}"}}'.format(max_min[1].split(' ')[0], max_min[0].split(' ')[0])
 
             outfile.write(template)
 
