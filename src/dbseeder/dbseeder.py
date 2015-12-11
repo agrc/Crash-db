@@ -438,12 +438,18 @@ class DbSeeder(object):
         try:
             remove(points)
         except:
-            pass
+            print('could not remove old points')
 
         try:
             remove(dates)
         except:
-            pass
+            print('could not remove old dates')
 
-        copyfile('points.json', points)
-        copyfile('dates.json', dates)
+        try:
+            copyfile('points.json', points)
+        except:
+            print('could not copy new points')
+        try:
+            copyfile('dates.json', dates)
+        except:
+            print('could not copy new dates')
