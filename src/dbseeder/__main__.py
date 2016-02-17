@@ -9,6 +9,7 @@ Usage:
   dbseeder (-h | --help | --version)
 Options:
   -h --help     Show this screen.
+  <configuration> dev, stage, prod
 '''
 
 
