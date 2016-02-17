@@ -8,7 +8,7 @@ The basic services
 '''
 
 import datetime
-import ceODBC as odbc
+import pyodbc as odbc
 import os
 from dateutil.parser import parse
 from models import Schema
@@ -69,9 +69,8 @@ class BrickLayer(object):
 
     """inserts the records into the database"""
 
-    def __init__(self, connection_string=None, creds=None):
-        super(BrickLayer, self).__init__()
-
+    def __init__(self, logger, connection_string=None, creds=None):
+        self.logger = logger
         self.batch_size = 10000
         self.arcpy_fields = {
             'crash': Schema.crash_fields
@@ -106,7 +105,7 @@ class BrickLayer(object):
 
         fields = self.arcpy_fields[table_name.lower()]
 
-        print 'total rows to insert {}'.format(len(rows))
+        self.logger.log('total rows to insert {}'.format(len(rows)))
         from arcpy.da import InsertCursor
         with InsertCursor(self.crash_table, fields) as cursor:
             for row in rows:
@@ -125,42 +124,40 @@ class BrickLayer(object):
         command = self.insert_statements[table_name.lower()]
 
         i = 1
-        start = 0
-        end = self.batch_size
+        self.logger.log('total rows to insert {}'.format(len(rows)))
+        for row in rows:
+            try:
+                cursor.execute(command, row)
+                i += 1
+
+                #: commit commands to database
+                if i % self.batch_size == 0:
+                    cursor.commit()
+            except Exception, e:
+                self.logger.log(command)
+                self.logger.log(row)
+
+                cursor.close()
+                connection.close()
+
+                raise e
+
         try:
-            print 'total rows to insert {}'.format(len(rows))
-
-            while start < len(rows):
-                batched_rows = rows[start:end]
-
-                cursor.executemany(command, batched_rows)
-                connection.commit()
-
-                i = i + 1
-                start = end
-                end = i * self.batch_size + 1
-        except:
-            # import pprint
-            # pp = pprint.PrettyPrinter(indent=4)
-            # pp.pprint(batched_rows)
-
-            print '{} {}-{}'.format(table_name, start, end)
-
-            raise
-        finally:
-            cursor.close()
-            connection.close()
+            cursor.commit()
+        except odbc.ProgrammingError:
+            #: connection is closed. error
+            pass
 
     def seed_features(self, arcpy, create=True):
         script_dir = os.path.dirname(__file__)
 
         if create:
-            print('seeding spatial data')
+            self.logger.log('seeding spatial data')
 
             with open(os.path.join(script_dir, 'data/sql/seed_spatial_data.sql'), 'r') as f:
                 sql = f.read()
         else:
-            print('removing seeded data')
+            self.logger.log('removing seeded data')
 
             with open(os.path.join(script_dir, 'data/sql/remove_seeded_data.sql'), 'r') as f:
                 sql = f.read()
