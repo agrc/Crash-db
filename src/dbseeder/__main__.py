@@ -6,7 +6,7 @@ Usage:
   dbseeder seed <source> <configuration>
   dbseeder create <configuration>
   dbseeder length <source>
-  dbseeder (-h | --help)
+  dbseeder (-h | --help | --version)
 Options:
   -h --help     Show this screen.
 '''
@@ -18,7 +18,7 @@ from docopt import docopt
 
 
 def main():
-    arguments = docopt(__doc__)
+    arguments = docopt(__doc__, version='1.0.2')
 
     seeder = DbSeeder()
 
