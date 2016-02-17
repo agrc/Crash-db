@@ -16,6 +16,7 @@ import os
 import re
 import secrets
 import timeit
+from logger import Logger
 from models import Schema, Lookup
 from os.path import basename, splitext, join, sep
 from os import environ, makedirs, remove
@@ -27,7 +28,7 @@ from time import strftime
 class DbSeeder(object):
 
     def __init__(self):
-        super(DbSeeder, self).__init__()
+        self.logger = Logger(script_name='crash-db')
 
     def process(self, location, who):
         print('started at {}'.format(strftime('%c')))
@@ -222,6 +223,8 @@ class DbSeeder(object):
             creds = secrets.stage
         elif who == 'prod':
             creds = secrets.prod
+        else:
+            creds = secrets.dev
 
         sde = os.path.join(script_dir,
                            'connections',
