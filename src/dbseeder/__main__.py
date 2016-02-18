@@ -22,7 +22,7 @@ from mailman import MailMan
 
 
 def main():
-    arguments = docopt(__doc__, version='1.0.2')
+    arguments = docopt(__doc__, version='1.1.0')
     testing = arguments['--testing']
 
     mailman = MailMan('sgourley@utah.gov', testing=testing)
