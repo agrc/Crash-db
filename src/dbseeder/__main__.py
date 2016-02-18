@@ -3,9 +3,9 @@
 
 '''Crash dbseeder
 Usage:
-  dbseeder seed <source> <configuration>
-  dbseeder create <configuration>
-  dbseeder length <source>
+  dbseeder seed <source> <configuration> [--testing]
+  dbseeder create <configuration> [--testing]
+  dbseeder length <source> [--testing]
   dbseeder (-h | --help | --version)
 Options:
   -h --help     Show this screen.
@@ -13,15 +13,41 @@ Options:
 '''
 
 
+import secrets
 import sys
 from dbseeder import DbSeeder
 from docopt import docopt
+from logger import Logger
+from mailman import MailMan
 
 
 def main():
     arguments = docopt(__doc__, version='1.0.2')
+    testing = arguments['--testing']
 
-    seeder = DbSeeder()
+    mailman = MailMan('sgourley@utah.gov', testing=testing)
+    logger = Logger(script_name='crash-db', stdout=testing)
+    seeder = DbSeeder(logger)
+
+    def global_exception_handler(ex_cls, ex, tb):
+        import traceback
+
+        last_traceback = (traceback.extract_tb(tb))[-1]
+        line_number = last_traceback[1]
+        file_name = last_traceback[0].split(".")[0]
+
+        logger.log(traceback.format_exception(ex_cls, ex, tb), stdout=testing)
+
+        mailman.deliver('crash-db error', logger.print_log())
+
+        if testing:
+            traceback.print_exception(ex_cls, ex, tb)
+
+            logger.log(logger.print_log(), stdout=testing)
+
+            logger.log(("line:%s (%s)" % (line_number, file_name)), stdout=testing)
+
+    sys.excepthook = global_exception_handler
 
     if arguments['length']:
         seeder.get_lengths(arguments['<source>'])
@@ -30,10 +56,19 @@ def main():
                     'data/sql/seed_spatial_data.sql']
 
         seeder.create_database(where=rel_path, who=arguments['<configuration>'])
-
-        return 0
     elif arguments['seed']:
         seeder.process(arguments['<source>'], who=arguments['<configuration>'])
+
+    if testing:
+        print(logger.print_log())
+    else:
+        creds = secrets.dev
+        if arguments['<configuration>'] == 'stage':
+            creds = secrets.stage
+        elif arguments['<configuration>'] == 'prod':
+            creds = secrets.prod
+
+        logger.save(creds['logs'])
 
     return 0
 

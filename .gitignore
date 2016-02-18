@@ -60,3 +60,5 @@ src/**/*.csv
 src/dbseeder/secrets.py
 src/dates.js
 src/points.json
+src/dbseeder/pickup/dates.json
+src/dbseeder/pickup/points.json

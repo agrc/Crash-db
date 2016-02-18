@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 '''
 dbseeder
 ----------------------------------
@@ -12,13 +11,11 @@ import csv
 import decimal
 import glob
 import json
-import os
 import re
 import secrets
 import timeit
-from logger import Logger
 from models import Schema, Lookup
-from os.path import basename, splitext, join, sep
+from os.path import basename, splitext, join, sep, dirname
 from os import environ, makedirs, remove
 from services import Caster, BrickLayer
 from shutil import copy, copyfile, rmtree
@@ -27,11 +24,11 @@ from time import strftime
 
 class DbSeeder(object):
 
-    def __init__(self):
-        self.logger = Logger(script_name='crash-db')
+    def __init__(self, logger):
+        self.logger = logger
 
     def process(self, location, who):
-        print('started at {}'.format(strftime('%c')))
+        self.logger.log('starting at {}'.format(strftime('%c')))
 
         creds = secrets.dev
         if who == 'stage':
@@ -39,7 +36,7 @@ class DbSeeder(object):
         elif who == 'prod':
             creds = secrets.prod
 
-        self.brick_layer = BrickLayer(creds=creds)
+        self.brick_layer = BrickLayer(self.logger, creds=creds)
         files = self._get_files(location)
 
         self.truncate_tables(creds)
@@ -48,7 +45,7 @@ class DbSeeder(object):
         self.brick_layer.seed_features(arcpy, create=True)
 
         for file in files:
-            print 'processing {}'.format(file)
+            self.logger.log('processing {}'.format(file))
 
             file_name = splitext(basename(file))[0]
             table_name = self._get_table_name(file_name)
@@ -59,11 +56,11 @@ class DbSeeder(object):
             fi = open(file, 'rb')
             data = fi.read()
             fi.close()
+
             fo = open(file, 'wb')
             data = data.replace('\xff', '')
             data = data.replace('\xfe', '')
             fo.write(data.replace('\x00', ''))
-
             fo.close()
 
             with open(file, 'rb') as csv_file:
@@ -76,7 +73,7 @@ class DbSeeder(object):
             items = []
 
             end = timeit.default_timer()
-            print 'processing time: {}'.format(end - start)
+            self.logger.log('processing time: {}'.format(end - start))
 
         #: delete seeded feature
         self.brick_layer.seed_features(arcpy, create=False)
@@ -85,13 +82,11 @@ class DbSeeder(object):
         self.create_points_json(creds)
         self.place_files(who)
 
-        print('finished')
+        self.logger.log('finished')
 
     def get_lengths(self, location):
         files = self._get_files(location)
-        items = {
-            'crash': {}
-        }
+        items = {'crash': {}}
 
         for file in files:
             file_name = splitext(basename(file))[0]
@@ -118,7 +113,7 @@ class DbSeeder(object):
 
                             items[table_name][key] = len(row[key])
                 except:
-                    print file
+                    self.logger.log(file)
                     raise
 
         import pprint
@@ -136,8 +131,7 @@ class DbSeeder(object):
         if len(files) < 1:
             raise Exception(location, 'No csv files found.')
 
-        script_dir = os.path.dirname(__file__)
-        script_dir = join(script_dir, 'data', 'local')
+        script_dir = self.make_absolute(['data', 'local'])
 
         rmtree(script_dir, ignore_errors=True)
         makedirs(script_dir)
@@ -209,28 +203,23 @@ class DbSeeder(object):
             return None
 
     def create_database(self, where, who):
-        print('DO NOT FORGET TO UPDATE THE POINTS.JSON')
+        self.logger.log('DO NOT FORGET TO UPDATE THE POINTS.JSON')
 
-        script_dir = os.path.dirname(__file__)
-        sr = os.path.join(script_dir, 'data/26912.prj')
-        creds = secrets.dev
+        sr = self.make_absolute(['data/26912.prj'])
 
         #: create sql drive and rollup tables
-        with open(os.path.join(script_dir, where[0]), 'r') as f:
+        with open(self.make_absolute([where[0]]), 'r') as f:
             sql = f.read()
 
+        creds = secrets.dev
         if who == 'stage':
             creds = secrets.stage
         elif who == 'prod':
             creds = secrets.prod
-        else:
-            creds = secrets.dev
 
-        sde = os.path.join(script_dir,
-                           'connections',
-                           creds['sde_connection_path'])
+        sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
-        print 'connecting to {} database'.format(who)
+        self.logger.log('connecting to {} database'.format(who))
 
         try:
             c = arcpy.ArcSDESQLExecute(sde)
@@ -241,60 +230,45 @@ class DbSeeder(object):
             if c:
                 del c
 
-        print 'created sql tables'
+        self.logger.log('created sql tables')
 
         arcpy.env.overwriteOutput = True
 
-        print 'creating spatial tables'
+        self.logger.log('creating spatial tables')
         try:
-            arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT',
-                                                spatial_reference=sr)
+            arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT', spatial_reference=sr)
 
         except arcpy.ExecuteError, e:
             if 'ERROR 000258' in e.message:
-                print 'feature class exists. Deleting and trying again.'
-                arcpy.Delete_management(os.path.join(sde, 'CrashLocation'))
+                self.logger.log('feature class exists. Deleting and trying again.')
+                arcpy.Delete_management(join(sde, 'CrashLocation'))
 
-                arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT',
-                                                    spatial_reference=sr)
+                arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT', spatial_reference=sr)
 
-        print 'adding spatial table fields'
+        self.logger.log('adding spatial table fields')
         arcpy.env.workspace = sde
 
         #: name, type, null, length
         fields = [
-            ['crash_id', 'LONG', 'NON_NULLABLE'],
-            ['crash_date', 'DATE', 'NULLABLE'],
-            ['crash_year', 'SHORT', 'NULLABLE'],
-            ['crash_month', 'SHORT', 'NULLABLE'],
-            ['crash_day', 'SHORT', 'NULLABLE'],
-            ['crash_hour', 'SHORT', 'NULLABLE'],
-            ['crash_minute', 'SHORT', 'NULLABLE'],
-            ['construction', 'SHORT', 'NULLABLE'],
-            ['weather_condition', 'TEXT', 'NULLABLE', 50],
-            ['road_condition', 'TEXT', 'NULLABLE', 50],
-            ['event', 'TEXT', 'NULLABLE', 100],
-            ['collision_type', 'TEXT', 'NULLABLE', 50],
-            ['severity', 'TEXT', 'NULLABLE', 50],
-            ['case_number', 'TEXT', 'NULLABLE', 400],
-            ['officer_name', 'TEXT', 'NULLABLE', 100],
-            ['officer_department', 'TEXT', 'NULLABLE', 100],
-            ['road_name', 'TEXT', 'NULLABLE', 100],
-            ['road_type', 'TEXT', 'NULLABLE', 20],
-            ['route_number', 'LONG', 'NULLABLE'],
-            ['milepost', 'DOUBLE', 'NULLABLE'],
-            ['city', 'TEXT', 'NULLABLE', 50],
-            ['county', 'TEXT', 'NULLABLE', 25],
-            ['utm_x', 'DOUBLE', 'NULLABLE'],
-            ['utm_y', 'DOUBLE', 'NULLABLE']
+            ['crash_id', 'LONG', 'NON_NULLABLE'], ['crash_date', 'DATE', 'NULLABLE'],
+            ['crash_year', 'SHORT', 'NULLABLE'], ['crash_month', 'SHORT', 'NULLABLE'],
+            ['crash_day', 'SHORT', 'NULLABLE'], ['crash_hour', 'SHORT', 'NULLABLE'],
+            ['crash_minute', 'SHORT', 'NULLABLE'], ['construction', 'SHORT', 'NULLABLE'],
+            ['weather_condition', 'TEXT', 'NULLABLE', 50], ['road_condition', 'TEXT', 'NULLABLE', 50],
+            ['event', 'TEXT', 'NULLABLE', 100], ['collision_type', 'TEXT', 'NULLABLE', 50],
+            ['severity', 'TEXT', 'NULLABLE', 50], ['case_number', 'TEXT', 'NULLABLE', 400],
+            ['officer_name', 'TEXT', 'NULLABLE', 100], ['officer_department', 'TEXT', 'NULLABLE', 100],
+            ['road_name', 'TEXT', 'NULLABLE', 100], ['road_type', 'TEXT', 'NULLABLE', 20],
+            ['route_number', 'LONG', 'NULLABLE'], ['milepost', 'DOUBLE', 'NULLABLE'], ['city', 'TEXT', 'NULLABLE', 50],
+            ['county', 'TEXT', 'NULLABLE', 25], ['utm_x', 'DOUBLE', 'NULLABLE'], ['utm_y', 'DOUBLE', 'NULLABLE']
         ]
 
         for field in fields:
             self.add_field('CrashLocation', field)
 
-        print('granting read access')
+        self.logger.log('granting read access')
 
-        with open(os.path.join(script_dir, 'data/sql/grant_permissions.sql'), 'r') as f:
+        with open(self.make_absolute(['data', 'sql', 'grant_permissions.sql']), 'r') as f:
             sql = f.read()
 
         try:
@@ -307,26 +281,19 @@ class DbSeeder(object):
 
     def add_field(self, table, field):
         if len(field) == 4:
-            arcpy.AddField_management(table, field[0], field[1],
-                                      field_is_nullable=field[2],
-                                      field_length=field[3])
+            arcpy.AddField_management(table, field[0], field[1], field_is_nullable=field[2], field_length=field[3])
 
             return
 
-        arcpy.AddField_management(table, field[0], field[1],
-                                  field_is_nullable=field[2])
+        arcpy.AddField_management(table, field[0], field[1], field_is_nullable=field[2])
 
     def truncate_tables(self, creds):
-        script_dir = os.path.dirname(__file__)
+        sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
-        sde = os.path.join(script_dir,
-                           'connections',
-                           creds['sde_connection_path'])
-
-        with open(os.path.join(script_dir, 'data/sql/truncate.sql'), 'r') as f:
+        with open(self.make_absolute(['data', 'sql', 'truncate.sql']), 'r') as f:
             sql = f.read()
 
-        print('truncating tabular tables')
+        self.logger.log('truncating tabular tables')
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             c.execute(sql)
@@ -339,21 +306,17 @@ class DbSeeder(object):
         arcpy.env.overwriteOutput = True
         arcpy.env.workspace = sde
 
-        print 'truncating spatial tables'
+        self.logger.log('truncating spatial tables')
         try:
             arcpy.TruncateTable_management('CrashLocation')
 
         except arcpy.ExecuteError, e:
-            print(e.message)
+            self.logger.log(e.message)
 
     def create_dates_js(self, creds):
-        print('creating dates.json')
+        self.logger.log('creating dates.json')
         start = timeit.default_timer()
-        script_dir = os.path.dirname(__file__)
-
-        sde = os.path.join(script_dir,
-                           'connections',
-                           creds['sde_connection_path'])
+        sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
         sql = '''SELECT max(crash_date) as max_date, min(crash_date) as max_date
         FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'''
@@ -363,33 +326,28 @@ class DbSeeder(object):
             max_min = c.execute(sql)
             max_min = max_min[0]
         except Exception, e:
-            print(e)
+            self.logger.log(e)
             raise e
         finally:
             if c:
                 del c
 
-        with open('dates.json', 'w') as outfile:
+        with open(self.make_absolute(['pickup', 'dates.json']), 'w+') as outfile:
             template = '{{"minDate": "{}", "maxDate": "{}"}}'.format(max_min[1].split(' ')[0], max_min[0].split(' ')[0])
 
             outfile.write(template)
 
-        print 'processing time: {}'.format(timeit.default_timer() - start)
+        self.logger.log('processing time: {}'.format(timeit.default_timer() - start))
 
     def create_points_json(self, creds):
-        print('creating new points.json')
+        self.logger.log('creating new points.json')
 
         start = timeit.default_timer()
-        script_dir = os.path.dirname(__file__)
 
-        sde = os.path.join(script_dir,
-                           'connections',
-                           creds['sde_connection_path'])
+        sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
         pattern = re.compile(r'\s+')
-        points = {
-            'points': []
-        }
+        points = {'points': []}
 
         sql = 'SELECT [OBJECTID],[Shape].STX as x,[Shape].STY as y FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'
 
@@ -397,7 +355,7 @@ class DbSeeder(object):
             c = arcpy.ArcSDESQLExecute(sde)
             result = c.execute(sql)
         except Exception, e:
-            print(e)
+            self.logger.log(e)
             raise e
         finally:
             if c:
@@ -405,8 +363,8 @@ class DbSeeder(object):
 
         def append_point(crash):
             if crash[1] > 0 and crash[2] > 0:
-                x = round(crash[1], 2)
-                y = round(crash[2], 2)
+                x = round(crash[1], 1)
+                y = round(crash[2], 1)
 
                 dx = decimal.Decimal(x).as_tuple()
                 dy = decimal.Decimal(y).as_tuple()
@@ -418,14 +376,14 @@ class DbSeeder(object):
 
                 points['points'].append([crash[0], x, y])
 
-        with open('points.json', 'w') as outfile:
+        with open(self.make_absolute(['pickup', 'points.json']), 'w+') as outfile:
             map(append_point, result)
 
             content = re.sub(pattern, '', json.dumps(points))
             outfile.write(content)
 
             end = timeit.default_timer()
-            print 'processing time: {}'.format(end - start)
+            self.logger.log('processing time: {}'.format(end - start))
 
     def place_files(self, who):
         place = join(environ.get("HOMEDRIVE"), sep, 'Projects', 'GitHub', 'Crash-web', 'src')
@@ -438,21 +396,32 @@ class DbSeeder(object):
         points = join(place, 'points.json')
         dates = join(place, 'app', 'resources', 'dates.json')
 
+        self.logger.log('placing points {}'.format(points))
+        self.logger.log('placing dates {}'.format(dates))
+
         try:
             remove(points)
-        except:
-            print('could not remove old points')
-
+        except Exception as e:
+            self.logger.log('could not remove old points')
+            self.logger.log_error(e)
         try:
             remove(dates)
-        except:
-            print('could not remove old dates')
+        except Exception as e:
+            self.logger.log('could not remove old dates')
+            self.logger.log_error(e)
 
         try:
-            copyfile('points.json', points)
-        except:
-            print('could not copy new points')
+            copyfile(self.make_absolute(['pickup', 'dates.json']), dates)
+        except Exception as e:
+            self.logger.log('could not copy new dates')
+            self.logger.log_error(e)
         try:
-            copyfile('dates.json', dates)
-        except:
-            print('could not copy new dates')
+            copyfile(self.make_absolute(['pickup', 'points.json']), points)
+        except Exception as e:
+            self.logger.log('could not copy new points')
+            raise e
+
+    def make_absolute(self, fragments):
+        parent = dirname(__file__)
+
+        return join(parent, *fragments)
