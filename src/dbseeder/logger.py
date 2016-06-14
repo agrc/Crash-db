@@ -24,9 +24,18 @@ class Logger:
         if stdout or self.stdout:
             print(msg)
 
-    def log_error(self, msg):
+    def warn(self, msg, stdout=False):
+        """
+        stores a log message and prints to stdout
+        """
+        self._log.append('{} | {}'.format(datetime.datetime.now().strftime('%I:%M %p'), msg))
+
+        if stdout or self.stdout:
+            print(msg)
+
+    def error(self, msg):
         import traceback
-        self.log(traceback.format_exc())
+        self.info(traceback.format_exc())
 
     def print_log(self):
         return self.pp.pformat(self._log)

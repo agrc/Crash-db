@@ -300,7 +300,7 @@ class DbSeeder(object):
         except Exception, e:
             raise e
         finally:
-            if c:
+            if c is not None:
                 del c
 
         arcpy.env.overwriteOutput = True
@@ -402,23 +402,20 @@ class DbSeeder(object):
         try:
             remove(points)
         except Exception as e:
-            self.logger.info('could not remove old points')
-            self.logger.log_error(e)
+            self.logger.warn('could not remove old points: %s', e.message, exc_info=True)
         try:
             remove(dates)
         except Exception as e:
-            self.logger.info('could not remove old dates')
-            self.logger.log_error(e)
+            self.logger.warn('could not remove old dates: %s', e.message, exc_info=True)
 
         try:
             copyfile(self.make_absolute(['pickup', 'dates.json']), dates)
         except Exception as e:
-            self.logger.info('could not copy new dates')
-            self.logger.log_error(e)
+            self.logger.error('could not copy new dates: %s', e.message, exc_info=True)
         try:
             copyfile(self.make_absolute(['pickup', 'points.json']), points)
         except Exception as e:
-            self.logger.info('could not copy new points')
+            self.logger.error('could not copy new points: %s', e.message, exc_info=True)
             raise e
 
     def make_absolute(self, fragments):

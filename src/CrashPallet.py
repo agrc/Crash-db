@@ -27,15 +27,17 @@ class CrashPallet(Pallet):
 
     def ship(self):
         self.log.info('mounting U drive')
+        error = None
 
         try:
-            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', secrets.mount_password, '/USER:smbagrc', '/PERSISTENT:YES'])
+            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', secrets.stage['mount_password'], '/USER:smbagrc',
+                        '/PERSISTENT:YES'])
         except CalledProcessError as e:
             self.log.error('There was a problem mounting the drive %s', e.message, exc_info=True)
-            return
 
         try:
             dbseeder = DbSeeder(self.log)
+            import pdb; pdb.set_trace()
             dbseeder.process('U:/collision', 'stage')
         except Exception as e:
             self.log.error('There was a problem shipping CrashPallet. %s', e.message, exc_info=True)
@@ -45,3 +47,6 @@ class CrashPallet(Pallet):
             check_call(['net', 'use', '/delete', 'U:'])
         except CalledProcessError as e:
             self.log.error('There was a problem unmounting the drive %s', e.message, exc_info=True)
+
+        if error is not None:
+            raise error
