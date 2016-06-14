@@ -15,7 +15,7 @@ class Logger:
         self.stdout = stdout
         self.pp = pprint.PrettyPrinter(indent=1)
 
-    def log(self, msg, stdout=False):
+    def info(self, msg, stdout=False):
         """
         stores a log message and prints to stdout
         """

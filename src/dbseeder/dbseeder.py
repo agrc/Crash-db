@@ -28,7 +28,7 @@ class DbSeeder(object):
         self.logger = logger
 
     def process(self, location, who):
-        self.logger.log('starting at {}'.format(strftime('%c')))
+        self.logger.info('starting at {}'.format(strftime('%c')))
 
         creds = secrets.dev
         if who == 'stage':
@@ -45,7 +45,7 @@ class DbSeeder(object):
         self.brick_layer.seed_features(arcpy, create=True)
 
         for file in files:
-            self.logger.log('processing {}'.format(file))
+            self.logger.info('processing {}'.format(file))
 
             file_name = splitext(basename(file))[0]
             table_name = self._get_table_name(file_name)
@@ -73,7 +73,7 @@ class DbSeeder(object):
             items = []
 
             end = timeit.default_timer()
-            self.logger.log('processing time: {}'.format(end - start))
+            self.logger.info('processing time: {}'.format(end - start))
 
         #: delete seeded feature
         self.brick_layer.seed_features(arcpy, create=False)
@@ -82,7 +82,7 @@ class DbSeeder(object):
         self.create_points_json(creds)
         self.place_files(who)
 
-        self.logger.log('finished')
+        self.logger.info('finished')
 
     def get_lengths(self, location):
         files = self._get_files(location)
@@ -113,7 +113,7 @@ class DbSeeder(object):
 
                             items[table_name][key] = len(row[key])
                 except:
-                    self.logger.log(file)
+                    self.logger.info(file)
                     raise
 
         import pprint
@@ -203,7 +203,7 @@ class DbSeeder(object):
             return None
 
     def create_database(self, where, who):
-        self.logger.log('DO NOT FORGET TO UPDATE THE POINTS.JSON')
+        self.logger.info('DO NOT FORGET TO UPDATE THE POINTS.JSON')
 
         sr = self.make_absolute(['data/26912.prj'])
 
@@ -219,7 +219,7 @@ class DbSeeder(object):
 
         sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
-        self.logger.log('connecting to {} database'.format(who))
+        self.logger.info('connecting to {} database'.format(who))
 
         try:
             c = arcpy.ArcSDESQLExecute(sde)
@@ -230,22 +230,22 @@ class DbSeeder(object):
             if c:
                 del c
 
-        self.logger.log('created sql tables')
+        self.logger.info('created sql tables')
 
         arcpy.env.overwriteOutput = True
 
-        self.logger.log('creating spatial tables')
+        self.logger.info('creating spatial tables')
         try:
             arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT', spatial_reference=sr)
 
         except arcpy.ExecuteError, e:
             if 'ERROR 000258' in e.message:
-                self.logger.log('feature class exists. Deleting and trying again.')
+                self.logger.info('feature class exists. Deleting and trying again.')
                 arcpy.Delete_management(join(sde, 'CrashLocation'))
 
                 arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT', spatial_reference=sr)
 
-        self.logger.log('adding spatial table fields')
+        self.logger.info('adding spatial table fields')
         arcpy.env.workspace = sde
 
         #: name, type, null, length
@@ -266,7 +266,7 @@ class DbSeeder(object):
         for field in fields:
             self.add_field('CrashLocation', field)
 
-        self.logger.log('granting read access')
+        self.logger.info('granting read access')
 
         with open(self.make_absolute(['data', 'sql', 'grant_permissions.sql']), 'r') as f:
             sql = f.read()
@@ -293,7 +293,7 @@ class DbSeeder(object):
         with open(self.make_absolute(['data', 'sql', 'truncate.sql']), 'r') as f:
             sql = f.read()
 
-        self.logger.log('truncating tabular tables')
+        self.logger.info('truncating tabular tables')
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             c.execute(sql)
@@ -306,15 +306,15 @@ class DbSeeder(object):
         arcpy.env.overwriteOutput = True
         arcpy.env.workspace = sde
 
-        self.logger.log('truncating spatial tables')
+        self.logger.info('truncating spatial tables')
         try:
             arcpy.TruncateTable_management('CrashLocation')
 
         except arcpy.ExecuteError, e:
-            self.logger.log(e.message)
+            self.logger.info(e.message)
 
     def create_dates_js(self, creds):
-        self.logger.log('creating dates.json')
+        self.logger.info('creating dates.json')
         start = timeit.default_timer()
         sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
@@ -326,7 +326,7 @@ class DbSeeder(object):
             max_min = c.execute(sql)
             max_min = max_min[0]
         except Exception, e:
-            self.logger.log(e)
+            self.logger.info(e)
             raise e
         finally:
             if c:
@@ -337,10 +337,10 @@ class DbSeeder(object):
 
             outfile.write(template)
 
-        self.logger.log('processing time: {}'.format(timeit.default_timer() - start))
+        self.logger.info('processing time: {}'.format(timeit.default_timer() - start))
 
     def create_points_json(self, creds):
-        self.logger.log('creating new points.json')
+        self.logger.info('creating new points.json')
 
         start = timeit.default_timer()
 
@@ -355,7 +355,7 @@ class DbSeeder(object):
             c = arcpy.ArcSDESQLExecute(sde)
             result = c.execute(sql)
         except Exception, e:
-            self.logger.log(e)
+            self.logger.info(e)
             raise e
         finally:
             if c:
@@ -383,7 +383,7 @@ class DbSeeder(object):
             outfile.write(content)
 
             end = timeit.default_timer()
-            self.logger.log('processing time: {}'.format(end - start))
+            self.logger.info('processing time: {}'.format(end - start))
 
     def place_files(self, who):
         place = join(environ.get("HOMEDRIVE"), sep, 'Projects', 'GitHub', 'Crash-web', 'src')
@@ -396,29 +396,29 @@ class DbSeeder(object):
         points = join(place, 'points.json')
         dates = join(place, 'app', 'resources', 'dates.json')
 
-        self.logger.log('placing points {}'.format(points))
-        self.logger.log('placing dates {}'.format(dates))
+        self.logger.info('placing points {}'.format(points))
+        self.logger.info('placing dates {}'.format(dates))
 
         try:
             remove(points)
         except Exception as e:
-            self.logger.log('could not remove old points')
+            self.logger.info('could not remove old points')
             self.logger.log_error(e)
         try:
             remove(dates)
         except Exception as e:
-            self.logger.log('could not remove old dates')
+            self.logger.info('could not remove old dates')
             self.logger.log_error(e)
 
         try:
             copyfile(self.make_absolute(['pickup', 'dates.json']), dates)
         except Exception as e:
-            self.logger.log('could not copy new dates')
+            self.logger.info('could not copy new dates')
             self.logger.log_error(e)
         try:
             copyfile(self.make_absolute(['pickup', 'points.json']), points)
         except Exception as e:
-            self.logger.log('could not copy new points')
+            self.logger.info('could not copy new points')
             raise e
 
     def make_absolute(self, fragments):
