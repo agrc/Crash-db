@@ -22,19 +22,19 @@ class CrashPallet(Pallet):
         #: this should not be used by LightSwitch but it is here for documentation purposes.
         self.arcgis_services = [('Crash/Crashes', 'MapServer')]
 
+    def build(self, configuration):
         if configuration is None:
             self.creds = secrets.prod
+            self.is_ready_to_ship = lambda: True
             return
 
-        if configuration == 'dev':
+        if configuration == 'Dev':
             self.creds = secrets.dev
-        elif configuration == 'stage':
+            self.is_ready_to_ship = lambda: True
+        elif configuration == 'Staging':
             self.creds = secrets.stage
-        elif configuration == 'prod':
+        elif configuration == 'Production':
             self.creds = secrets.prod
-
-        #: if running the pallet with a configuration we probably don't care if it's a monday so shipit
-        self.is_ready_to_ship = lambda: True
 
     def is_ready_to_ship(self):
         return strftime('%A') == 'Monday'
@@ -44,8 +44,8 @@ class CrashPallet(Pallet):
         error = None
 
         try:
-            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', self.creds['mount_password'], '/USER:smbagrc',
-                        '/PERSISTENT:YES'])
+            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', self.creds['mount_password'], '/USER:{}'.format(
+                self.creds['mount_user']), '/PERSISTENT:YES'])
         except CalledProcessError as e:
             self.log.error('There was a problem mounting the drive %s', e.message, exc_info=True)
 

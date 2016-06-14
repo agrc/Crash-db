@@ -13,6 +13,7 @@ stage = {
     'username': '',
     'password': '',
     'logs': 'folder path',
+    'mount_user': '',
     'mount_password': ''
 }
 
@@ -22,5 +23,6 @@ prod = {
     'username': '',
     'password': '',
     'logs': 'folder path',
+    'mount_user': '',
     'mount_password': ''
 }
