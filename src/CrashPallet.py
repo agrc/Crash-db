@@ -15,11 +15,25 @@ from subprocess import check_call
 
 class CrashPallet(Pallet):
 
-    def __init__(self):
+    def __init__(self, configuration=None):
         super(CrashPallet, self).__init__()
 
         #: this should not be used by LightSwitch but it is here for documentation purposes.
         self.arcgis_services = [('Crash/Crashes', 'MapServer')]
+
+        if configuration is None:
+            self.creds = secrets.prod
+            return
+
+        if configuration == 'dev':
+            self.creds = secrets.dev
+        elif configuration == 'stage':
+            self.creds = secrets.stage
+        elif configuration == 'prod':
+            self.creds = secrets.prod
+
+        #: if running the pallet with a configuration we probably don't care if it's a monday so shipit
+        self.is_ready_to_ship = lambda: True
 
     def is_ready_to_ship(self):
         #: if today is monday, run
@@ -30,7 +44,7 @@ class CrashPallet(Pallet):
         error = None
 
         try:
-            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', secrets.stage['mount_password'], '/USER:smbagrc',
+            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', self.creds['mount_password'], '/USER:smbagrc',
                         '/PERSISTENT:YES'])
         except CalledProcessError as e:
             self.log.error('There was a problem mounting the drive %s', e.message, exc_info=True)
