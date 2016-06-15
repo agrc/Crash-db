@@ -51,7 +51,6 @@ class CrashPallet(Pallet):
 
         try:
             dbseeder = DbSeeder(self.log)
-            import pdb; pdb.set_trace()
             dbseeder.process('U:/collision', 'stage')
         except Exception as e:
             self.log.error('There was a problem shipping CrashPallet. %s', e.message, exc_info=True)
