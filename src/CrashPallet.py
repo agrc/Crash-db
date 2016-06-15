@@ -11,6 +11,7 @@ from dbseeder.dbseeder import DbSeeder
 from forklift.models import Pallet
 from subprocess import CalledProcessError
 from subprocess import check_call
+from time import strftime
 
 
 class CrashPallet(Pallet):
@@ -36,8 +37,7 @@ class CrashPallet(Pallet):
         self.is_ready_to_ship = lambda: True
 
     def is_ready_to_ship(self):
-        #: if today is monday, run
-        return True
+        return strftime('%A') == 'Monday'
 
     def ship(self):
         self.log.info('mounting U drive')
