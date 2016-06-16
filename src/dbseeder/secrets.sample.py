@@ -3,7 +3,8 @@ dev = {
     'server': '(local)',
     'username': '',
     'password': '',
-    'logs': 'folder path'
+    'logs': 'folder path',
+    'mount_password': ''
 }
 
 stage = {
@@ -11,7 +12,8 @@ stage = {
     'server': '',
     'username': '',
     'password': '',
-    'logs': 'folder path'
+    'logs': 'folder path',
+    'mount_password': ''
 }
 
 prod = {
@@ -19,5 +21,6 @@ prod = {
     'server': '',
     'username': '',
     'password': '',
-    'logs': 'folder path'
+    'logs': 'folder path',
+    'mount_password': ''
 }

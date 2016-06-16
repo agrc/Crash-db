@@ -105,7 +105,7 @@ class BrickLayer(object):
 
         fields = self.arcpy_fields[table_name.lower()]
 
-        self.logger.log('total rows to insert {}'.format(len(rows)))
+        self.logger.info('total rows to insert {}'.format(len(rows)))
         from arcpy.da import InsertCursor
         with InsertCursor(self.crash_table, fields) as cursor:
             for row in rows:
@@ -124,7 +124,7 @@ class BrickLayer(object):
         command = self.insert_statements[table_name.lower()]
 
         i = 1
-        self.logger.log('total rows to insert {}'.format(len(rows)))
+        self.logger.info('total rows to insert {}'.format(len(rows)))
         for row in rows:
             try:
                 cursor.execute(command, row)
@@ -134,8 +134,8 @@ class BrickLayer(object):
                 if i % self.batch_size == 0:
                     cursor.commit()
             except Exception, e:
-                self.logger.log(command)
-                self.logger.log(row)
+                self.logger.debug(command)
+                self.logger.debug(row)
 
                 cursor.close()
                 connection.close()
@@ -152,12 +152,12 @@ class BrickLayer(object):
         script_dir = os.path.dirname(__file__)
 
         if create:
-            self.logger.log('seeding spatial data')
+            self.logger.info('seeding spatial data')
 
             with open(os.path.join(script_dir, 'data/sql/seed_spatial_data.sql'), 'r') as f:
                 sql = f.read()
         else:
-            self.logger.log('removing seeded data')
+            self.logger.info('removing seeded data')
 
             with open(os.path.join(script_dir, 'data/sql/remove_seeded_data.sql'), 'r') as f:
                 sql = f.read()
