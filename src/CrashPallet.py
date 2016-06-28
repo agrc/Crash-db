@@ -37,7 +37,11 @@ class CrashPallet(Pallet):
             self.creds = secrets.prod
 
     def is_ready_to_ship(self):
-        return strftime('%A') == 'Monday'
+        ready = strftime('%A') == 'Monday'
+        if not ready:
+            self.success = (True, 'This pallet only runs on Monday.')
+
+        return ready
 
     def ship(self):
         self.log.info('mounting U drive')
