@@ -71,6 +71,3 @@ def main():
         logger.save(creds['logs'])
 
     return 0
-
-if __name__ == '__main__':
-    sys.exit(main())

@@ -75,6 +75,3 @@ class TestCaster(unittest.TestCase):
 
         actual = service.Caster.cast('123.123', 'double')
         self.assertEqual(actual, 123.123, msg='double')
-
-if __name__ == '__main__':
-    unittest.main()
