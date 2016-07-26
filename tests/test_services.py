@@ -9,7 +9,7 @@ test the service module
 
 import unittest
 import datetime
-import dbseeder.services as service
+import crashdb.services as service
 
 
 class TestCaster(unittest.TestCase):

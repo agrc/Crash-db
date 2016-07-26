@@ -7,6 +7,8 @@ models
 The basic models
 '''
 
+from pyproj import Proj, transform
+
 
 class Schema(object):
 
@@ -238,7 +240,7 @@ class Schema(object):
         },
         'UTM_X': {
             'type': 'float',
-            'map': 'utm_x'
+            'map': 'utm_x',
         },
         'UTM_Y': {
             'type': 'float',
@@ -260,8 +262,17 @@ class Schema(object):
     }
 
     @staticmethod
+    def to_web_mercator(x, y):
+        '''reproject x and y from 26912 to 3857'''
+        input_system = Proj(init='epsg:26912')
+        ouput_system = Proj(init='epsg:3857')
+
+        return transform(input_system, ouput_system, x, y)
+
+    @staticmethod
     def crash_schema_ordering(d):
-        geometry = (d['utm_x'], d['utm_y'])
+        geometry = (Schema.to_web_mercator(d['utm_x'], d['utm_y']))
+
         return [
             geometry,
             d['crash_id'],

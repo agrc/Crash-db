@@ -27,6 +27,12 @@ class Caster(object):
         except:
             pass
 
+        def noop(x):
+            return x
+
+        def is_boolean_value(x):
+            return x.lower() in ('yes', 'true', 't', '1')
+
         if cast_to == 'string':
             cast = str
         elif cast_to == 'int':
@@ -36,13 +42,13 @@ class Caster(object):
             cast = float
         elif cast_to == 'date':
             if isinstance(value, datetime.datetime):
-                cast = lambda x: x
+                cast = noop
             elif value == '':
                 return None
             else:
                 cast = parse
         elif cast_to == 'bool':
-            cast = lambda x: x.lower() in ('yes', 'true', 't', '1')
+            cast = is_boolean_value
         elif cast_to == 'bit':
             cast = Caster._cast_bit
         else:

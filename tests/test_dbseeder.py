@@ -9,7 +9,7 @@ test the dbseeder module
 
 import unittest
 import datetime
-from dbseeder.dbseeder import DbSeeder
+from crashdb.crashseeder import CrashSeeder
 from os.path import join
 from os import sep
 from nose.plugins.skip import SkipTest
@@ -20,7 +20,7 @@ class TestDbSeeder(unittest.TestCase):
     patient = None
 
     def setUp(self):
-        self.patient = DbSeeder()
+        self.patient = CrashSeeder()
         self.maxDiff = None
 
     def test_process(self):

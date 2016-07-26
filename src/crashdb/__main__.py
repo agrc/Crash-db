@@ -3,10 +3,10 @@
 
 '''Crash dbseeder
 Usage:
-  dbseeder seed <source> <configuration> [--testing]
-  dbseeder create <configuration> [--testing]
-  dbseeder length <source> [--testing]
-  dbseeder (-h | --help | --version)
+  crashdb seed <source> <configuration> [--testing]
+  crashdb create <configuration> [--testing]
+  crashdb length <source> [--testing]
+  crashdb (-h | --help | --version)
 Options:
   -h --help     Show this screen.
   <configuration> dev, stage, prod
@@ -15,7 +15,7 @@ Options:
 
 import secrets
 import sys
-from dbseeder import DbSeeder
+from crashseeder import CrashSeeder
 from docopt import docopt
 from logger import Logger
 from mailman import MailMan
@@ -27,7 +27,7 @@ def main():
 
     mailman = MailMan('sgourley@utah.gov', testing=testing)
     logger = Logger(script_name='crash-db', stdout=testing)
-    seeder = DbSeeder(logger)
+    seeder = CrashSeeder(logger)
 
     def global_exception_handler(ex_cls, ex, tb):
         import traceback
