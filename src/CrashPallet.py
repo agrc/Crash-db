@@ -53,13 +53,13 @@ class CrashPallet(Pallet):
         error = None
 
         try:
-            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', self.creds['mount_password'], '/USER:{}'.format(
-                self.creds['mount_user']), '/PERSISTENT:YES'])
+            check_call(['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', self.creds['mount_password'], '/USER:{}'.format(self.creds['mount_user']),
+                        '/PERSISTENT:YES'])
         except CalledProcessError as e:
             self.log.error('There was a problem mounting the drive %s', e.message, exc_info=True)
 
         try:
-            dbseeder = DbSeeder(self.log)
+            dbseeder = CrashSeeder(self.log)
             dbseeder.process('U:/collision', self.configuration)
         except Exception as e:
             self.log.error('There was a problem shipping CrashPallet. %s', e.message, exc_info=True)

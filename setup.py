@@ -39,7 +39,7 @@ class Tox(TestCommand):
         sys.exit(errno)
 
 setup(
-    name="crash-dbseeder",
+    name="crashdb",
     version="1.1.0",
     license="MIT",
     description="ETL Crash Data",
@@ -50,7 +50,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     py_modules=[splitext(basename(i))[0] for i in glob.glob("src/*.py")],
-    package_data={"crashdb": ['connections/*.sde', 'data/sql/*.sql']},
+    package_data={"crashdb": ['connections/*.sde', 'data/sql/*.sql', 'pickup/*.md']},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -71,14 +71,14 @@ setup(
     install_requires=[
         "python-dateutil==2.3",
         "docopt==0.6.2",
-        "pyproj==1.9.5"
+        "pyproj==1.9.5.1"
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],
     },
     entry_points={
         "console_scripts": [
-            "crashseeder = crashdb.__main__:main"
+            "crashdb = crashdb.__main__:main"
         ]
     },
     cmdclass={

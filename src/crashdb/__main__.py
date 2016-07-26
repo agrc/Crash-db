@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''Crash dbseeder
+'''Crash ETL CLI
 Usage:
   crashdb seed <source> <configuration> [--testing]
   crashdb create <configuration> [--testing]
