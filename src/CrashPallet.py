@@ -6,8 +6,8 @@ CrashPallet.py
 A module that contains the pallet to keep the crashmapping.utah.gov website fresh
 '''
 
-from dbseeder import secrets
-from dbseeder.dbseeder import DbSeeder
+from crashdb import secrets
+from crashdb.crashseeder import CrashSeeder
 from forklift.models import Pallet
 from subprocess import CalledProcessError
 from subprocess import check_call
