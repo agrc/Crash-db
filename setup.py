@@ -45,12 +45,12 @@ setup(
     description="ETL Crash Data",
     long_description="",
     author="Steve Gourley",
-    author_email="SGourley@utah.gov",
+    author_email="sgourley@utah.gov",
     url="https://github.com/agrc/crash-db",
     packages=find_packages("src"),
     package_dir={"": "src"},
     py_modules=[splitext(basename(i))[0] for i in glob.glob("src/*.py")],
-    package_data={"dbseeder": ['connections/*.sde', 'data/sql/*.sql']},
+    package_data={"crashdb": ['connections/*.sde', 'data/sql/*.sql']},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -70,14 +70,15 @@ setup(
     ],
     install_requires=[
         "python-dateutil==2.3",
-        "docopt==0.6.2"
+        "docopt==0.6.2",
+        "pyproj==1.9.5"
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],
     },
     entry_points={
         "console_scripts": [
-            "dbseeder = dbseeder.__main__:main"
+            "crashseeder = crashdb.__main__:main"
         ]
     },
     cmdclass={
