@@ -57,8 +57,8 @@ src/**/*.csv
 *.xlsx
 *.sublime-workspace
 *.sde
-src/dbseeder/secrets.py
+src/crashdb/secrets.py
 src/dates.js
 src/points.json
-src/dbseeder/pickup/dates.json
-src/dbseeder/pickup/points.json
+src/crashdb/pickup/dates.json
+src/crashdb/pickup/points.json
