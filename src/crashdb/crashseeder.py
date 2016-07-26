@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-dbseeder
+crashseeder
 ----------------------------------
-the dbseeder module
+the crashseeder module
 '''
 
 import arcpy
 import csv
-import decimal
 import glob
 import json
 import re
@@ -362,19 +361,14 @@ class CrashSeeder(object):
                 del c
 
         def append_point(crash):
-            if crash[1] > 0 and crash[2] > 0:
-                x = round(crash[1], 1)
-                y = round(crash[2], 1)
+            id, x, y = crash
+            if x is None or y is None:
+                return
 
-                dx = decimal.Decimal(x).as_tuple()
-                dy = decimal.Decimal(y).as_tuple()
+            x = int(x)
+            y = int(y)
 
-                if dx.exponent == 0:
-                    x = int(x)
-                if dy.exponent == 0:
-                    y = int(y)
-
-                points['points'].append([crash[0], x, y])
+            points['points'].append([id, x, y])
 
         with open(self.make_absolute(['pickup', 'points.json']), 'w+') as outfile:
             map(append_point, result)
