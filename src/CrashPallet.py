@@ -25,16 +25,21 @@ class CrashPallet(Pallet):
     def build(self, configuration):
         if configuration is None:
             self.creds = secrets.prod
+            self.configuration = 'prod'
             self.is_ready_to_ship = lambda: True
+
             return
 
         if configuration == 'Dev':
             self.creds = secrets.dev
             self.is_ready_to_ship = lambda: True
+            self.configuration = 'dev'
         elif configuration == 'Staging':
             self.creds = secrets.stage
+            self.configuration = 'stage'
         elif configuration == 'Production':
             self.creds = secrets.prod
+            self.configuration = 'prod'
 
     def is_ready_to_ship(self):
         ready = strftime('%A') == 'Monday'
@@ -55,7 +60,7 @@ class CrashPallet(Pallet):
 
         try:
             dbseeder = DbSeeder(self.log)
-            dbseeder.process('U:/collision', 'stage')
+            dbseeder.process('U:/collision', self.configuration)
         except Exception as e:
             self.log.error('There was a problem shipping CrashPallet. %s', e.message, exc_info=True)
             error = e
