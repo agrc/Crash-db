@@ -4,7 +4,8 @@ dev = {
     'username': '',
     'password': '',
     'logs': 'folder path',
-    'mount_password': ''
+    'mount_password': '',
+    'place_location': 'the root to the crash location to place dates and points.json'
 }
 
 stage = {
@@ -14,7 +15,8 @@ stage = {
     'password': '',
     'logs': 'folder path',
     'mount_user': '',
-    'mount_password': ''
+    'mount_password': '',
+    'place_location': ''
 }
 
 prod = {
@@ -24,5 +26,6 @@ prod = {
     'password': '',
     'logs': 'folder path',
     'mount_user': '',
-    'mount_password': ''
+    'mount_password': '',
+    'place_location': ''
 }

@@ -80,7 +80,7 @@ class DbSeeder(object):
 
         self.create_dates_js(creds)
         self.create_points_json(creds)
-        self.place_files(who)
+        self.place_files(creds['place_location'])
 
         self.logger.info('finished')
 
@@ -385,16 +385,9 @@ class DbSeeder(object):
             end = timeit.default_timer()
             self.logger.info('processing time: {}'.format(end - start))
 
-    def place_files(self, who):
-        place = join(environ.get("HOMEDRIVE"), sep, 'Projects', 'GitHub', 'Crash-web', 'src')
-
-        if who == 'stage':
-            place = join(environ.get("HOMEDRIVE"), sep, 'inetpub', 'wwwroot', 'crash')
-        elif who == 'prod':
-            place = join('w:', sep, 'inetpub', 'wwwroot', 'crash')
-
-        points = join(place, 'points.json')
-        dates = join(place, 'app', 'resources', 'dates.json')
+    def place_files(self, place_location):
+        points = join(place_location, 'points.json')
+        dates = join(place_location, 'app', 'resources', 'dates.json')
 
         self.logger.info('placing points {}'.format(points))
         self.logger.info('placing dates {}'.format(dates))
