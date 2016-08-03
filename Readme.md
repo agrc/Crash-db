@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/agrc/Crash-db.svg?branch=travis)](https://travis-ci.org/agrc/Crash-db)
+[![Build Status](https://travis-ci.org/agrc/Crash-db.svg?branch=master)](https://travis-ci.org/agrc/Crash-db)
 
 Crash DB
 ========
@@ -28,10 +28,12 @@ A db seeder etl tool for crash data.
 
 `_csv.Error: line contains NULL byte`. CSV's need to be resaved.
 
+The points.json are out of sync with the map service. The etl will create new points.json. The [Crash-web](https://github.com/agrc/Crash-web) has a python script that get's run on deploys to sync also. **If these do not work**, check the rest queries. If they are returning `ESRI_OID` instead of `OBJECTED` then the map service query layer needs to be updated. Only check the `OBJECTID` field as unique. **Remove all other checks** and republish.
+
 ### Deployment
 1. checkout repo
 1. create `secrets.py`
 1. make sure `pip` is installed
 1. create `connections` folder within `src\dbseeder`
-1. run `setup.py install`
+1. run `pip install ./` from the current working directory containing `setup.py`
 1. put connections and data folder inside `python\Lib\site-packages\crash_dbseeder.egg\dbseeder` if it's not already there
