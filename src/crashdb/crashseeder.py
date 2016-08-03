@@ -79,7 +79,7 @@ class CrashSeeder(object):
 
         self.create_dates_js(creds)
         self.create_points_json(creds)
-        self.place_files(who, creds['place_location'])
+        self.place_files(creds['place_location'])
 
         self.logger.info('finished')
 
@@ -379,7 +379,7 @@ class CrashSeeder(object):
             end = timeit.default_timer()
             self.logger.info('processing time: {}'.format(end - start))
 
-    def place_files(self, who, place_location):
+    def place_files(self, place_location):
         points = join(place_location, 'points.json')
         dates = join(place_location, 'app', 'resources', 'dates.json')
 
