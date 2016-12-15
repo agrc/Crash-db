@@ -23,7 +23,7 @@ class CrashPallet(Pallet):
         self.arcgis_services = [('Crash/Crashes', 'MapServer')]
 
     def build(self, configuration):
-        if configuration is None:
+        if configuration is None or configuration == 'on-demand':
             self.creds = secrets.prod
             self.configuration = 'prod'
             self.is_ready_to_ship = lambda: True
