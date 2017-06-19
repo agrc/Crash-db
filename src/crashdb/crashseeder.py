@@ -52,17 +52,17 @@ class CrashSeeder(object):
             items = []
 
             #: remove null bytes from csv
-            fi = open(file, 'rb')
+            fi = open(file, 'r')
             data = fi.read()
             fi.close()
 
-            fo = open(file, 'wb')
+            fo = open(file, 'w')
             data = data.replace('\xff', '')
             data = data.replace('\xfe', '')
             fo.write(data.replace('\x00', ''))
             fo.close()
 
-            with open(file, 'rb') as csv_file:
+            with open(file, 'r') as csv_file:
                 reader = csv.DictReader(csv_file, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
                 for row in reader:
