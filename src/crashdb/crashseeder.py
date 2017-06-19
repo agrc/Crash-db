@@ -11,14 +11,14 @@ import csv
 import glob
 import json
 import re
-import secrets
 import timeit
-from models import Schema, Lookup
 from os.path import basename, splitext, join, sep, dirname
 from os import environ, makedirs, remove
-from services import Caster, BrickLayer
 from shutil import copy, copyfile, rmtree
 from time import strftime
+from . import secrets
+from .models import Schema, Lookup
+from .services import Caster, BrickLayer
 
 
 class CrashSeeder(object):

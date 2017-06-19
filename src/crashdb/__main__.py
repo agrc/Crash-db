@@ -13,12 +13,12 @@ Options:
 '''
 
 
-import secrets
 import sys
-from crashseeder import CrashSeeder
 from docopt import docopt
-from logger import Logger
-from mailman import MailMan
+from . import secrets
+from .crashseeder import CrashSeeder
+from .logger import Logger
+from .mailman import MailMan
 
 
 def main():

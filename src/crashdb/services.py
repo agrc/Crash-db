@@ -11,7 +11,7 @@ import datetime
 import pyodbc as odbc
 import os
 from dateutil.parser import parse
-from models import Schema
+from .models import Schema
 
 
 class Caster(object):
