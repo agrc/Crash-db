@@ -62,8 +62,8 @@ class Schema(object):
             d['driver_distraction']
         ]
 
-    driver_input_keys = driver.keys()
-    driver_etl_keys = map(lambda x: x['map'], driver.values())
+    driver_input_keys = list(driver.keys())
+    driver_etl_keys = [x['map'] for x in list(driver.values())]
 
     rollup = {
         'BICYCLIST_INVOLVED': {
@@ -153,8 +153,8 @@ class Schema(object):
             d['unrestrained']
         ]
 
-    rollup_input_keys = rollup.keys()
-    rollup_etl_keys = map(lambda x: x['map'], rollup.values())
+    rollup_input_keys = list(rollup.keys())
+    rollup_etl_keys = [x['map'] for x in list(rollup.values())]
 
     crash = {
         'CASE_NUMBER(CONFIDENTIAL)': {
@@ -330,8 +330,8 @@ class Schema(object):
                     'county',
                     'utm_x',
                     'utm_y']
-    crash_input_keys = crash.keys()
-    crash_etl_keys = map(lambda x: x['map'], crash.values())
+    crash_input_keys = list(crash.keys())
+    crash_etl_keys = [x['map'] for x in list(crash.values())]
 
 
 class Lookup(object):

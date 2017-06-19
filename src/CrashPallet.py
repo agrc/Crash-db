@@ -62,13 +62,13 @@ class CrashPallet(Pallet):
             dbseeder = CrashSeeder(self.log)
             dbseeder.process('U:/collision', self.configuration)
         except Exception as e:
-            self.log.error('There was a problem shipping CrashPallet. %s', e.message, exc_info=True)
+            self.log.error('There was a problem shipping CrashPallet. %s', e, exc_info=True)
             error = e
 
         try:
             check_call(['net', 'use', '/delete', 'U:'])
         except CalledProcessError as e:
-            self.log.error('There was a problem unmounting the drive %s', e.message, exc_info=True)
+            self.log.error('There was a problem unmounting the drive %s', e, exc_info=True)
 
         if error is not None:
             raise error

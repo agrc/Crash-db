@@ -106,7 +106,7 @@ class BrickLayer(object):
                                             'DDACTS.DDACTSadmin.CrashLocation')
 
     def insert_rows_with_arcpy(self, table_name, rows):
-        if table_name.lower() not in self.insert_statements.keys():
+        if table_name.lower() not in list(self.insert_statements.keys()):
             raise Exception(table_name, 'Do not know how to insert this type of record')
 
         fields = self.arcpy_fields[table_name.lower()]
@@ -118,7 +118,7 @@ class BrickLayer(object):
                 cursor.insertRow(row)
 
     def insert_rows(self, table_name, rows):
-        if table_name.lower() not in self.insert_statements.keys():
+        if table_name.lower() not in list(self.insert_statements.keys()):
             raise Exception(table_name, 'Do not know how to insert this type of record')
 
         if table_name == 'crash':
@@ -139,7 +139,7 @@ class BrickLayer(object):
                 #: commit commands to database
                 if i % self.batch_size == 0:
                     cursor.commit()
-            except Exception, e:
+            except Exception as e:
                 self.logger.debug(command)
                 self.logger.debug(row)
 
@@ -171,7 +171,7 @@ class BrickLayer(object):
         try:
             c = arcpy.ArcSDESQLExecute(self.sde)
             c.execute(sql)
-        except Exception, e:
+        except Exception as e:
             raise e
         finally:
             del c

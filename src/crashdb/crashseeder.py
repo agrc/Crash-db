@@ -101,8 +101,8 @@ class CrashSeeder(object):
 
                 try:
                     for row in reader:
-                        for key in row.keys():
-                            if key not in lookup.keys():
+                        for key in list(row.keys()):
+                            if key not in list(lookup.keys()):
                                 continue
                             if lookup[key]['type'] != 'string':
                                 continue
@@ -138,7 +138,7 @@ class CrashSeeder(object):
         def copy_files_local(file):
             copy(file, script_dir)
 
-        map(copy_files_local, files)
+        list(map(copy_files_local, files))
 
         files = glob.glob(join(script_dir, '*.csv'))
 
@@ -168,7 +168,7 @@ class CrashSeeder(object):
     def _etl_row_generic(self, row, lookup, input_keys, etl_keys, formatter=None):
         etl_row = dict.fromkeys(etl_keys)
 
-        for key in row.keys():
+        for key in list(row.keys()):
             if key not in input_keys:
                 continue
 
@@ -177,11 +177,11 @@ class CrashSeeder(object):
             value = row[key]
             etl_value = Caster.cast(value, etl_info['type'])
 
-            if 'lookup' in etl_info.keys():
+            if 'lookup' in list(etl_info.keys()):
                 lookup_name = etl_info['lookup']
                 values = Lookup.__dict__[lookup_name]
 
-                if etl_value in values.keys():
+                if etl_value in list(values.keys()):
                     etl_value = values[etl_value]
 
             etl_row[etl_info['map']] = etl_value
@@ -223,7 +223,7 @@ class CrashSeeder(object):
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             c.execute(sql)
-        except Exception, e:
+        except Exception as e:
             raise e
         finally:
             if c:
@@ -237,8 +237,8 @@ class CrashSeeder(object):
         try:
             arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT', spatial_reference=sr)
 
-        except arcpy.ExecuteError, e:
-            if 'ERROR 000258' in e.message:
+        except arcpy.ExecuteError as e:
+            if 'ERROR 000258' in e:
                 self.logger.info('feature class exists. Deleting and trying again.')
                 arcpy.Delete_management(join(sde, 'CrashLocation'))
 
@@ -273,7 +273,7 @@ class CrashSeeder(object):
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             c.execute(sql)
-        except Exception, e:
+        except Exception as e:
             raise e
         finally:
             del c
@@ -296,7 +296,7 @@ class CrashSeeder(object):
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             c.execute(sql)
-        except Exception, e:
+        except Exception as e:
             raise e
         finally:
             if c is not None:
@@ -309,8 +309,8 @@ class CrashSeeder(object):
         try:
             arcpy.TruncateTable_management('CrashLocation')
 
-        except arcpy.ExecuteError, e:
-            self.logger.info(e.message)
+        except arcpy.ExecuteError as e:
+            self.logger.info(e)
 
     def create_dates_js(self, creds):
         self.logger.info('creating dates.json')
@@ -324,7 +324,7 @@ class CrashSeeder(object):
             c = arcpy.ArcSDESQLExecute(sde)
             max_min = c.execute(sql)
             max_min = max_min[0]
-        except Exception, e:
+        except Exception as e:
             self.logger.info(e)
             raise e
         finally:
@@ -353,7 +353,7 @@ class CrashSeeder(object):
         try:
             c = arcpy.ArcSDESQLExecute(sde)
             result = c.execute(sql)
-        except Exception, e:
+        except Exception as e:
             self.logger.info(e)
             raise e
         finally:
@@ -371,7 +371,7 @@ class CrashSeeder(object):
             points['points'].append([id, x, y])
 
         with open(self.make_absolute(['pickup', 'points.json']), 'w+') as outfile:
-            map(append_point, result)
+            list(map(append_point, result))
 
             content = re.sub(pattern, '', json.dumps(points))
             outfile.write(content)
@@ -389,20 +389,20 @@ class CrashSeeder(object):
         try:
             remove(points)
         except Exception as e:
-            self.logger.warn('could not remove old points: %s', e.message, exc_info=True)
+            self.logger.warn('could not remove old points: %s', e, exc_info=True)
         try:
             remove(dates)
         except Exception as e:
-            self.logger.warn('could not remove old dates: %s', e.message, exc_info=True)
+            self.logger.warn('could not remove old dates: %s', e, exc_info=True)
 
         try:
             copyfile(self.make_absolute(['pickup', 'dates.json']), dates)
         except Exception as e:
-            self.logger.error('could not copy new dates: %s', e.message, exc_info=True)
+            self.logger.error('could not copy new dates: %s', e, exc_info=True)
         try:
             copyfile(self.make_absolute(['pickup', 'points.json']), points)
         except Exception as e:
-            self.logger.error('could not copy new points: %s', e.message, exc_info=True)
+            self.logger.error('could not copy new points: %s', e, exc_info=True)
             raise e
 
     def make_absolute(self, fragments):
