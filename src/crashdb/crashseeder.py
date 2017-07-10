@@ -331,7 +331,7 @@ class CrashSeeder(object):
             if c:
                 del c
 
-        with open(self.make_absolute(['pickup', 'dates.json']), 'w+') as outfile:
+        with open(self.make_absolute(['pickup', 'dates.json']), 'w') as outfile:
             template = '{{"minDate": "{}", "maxDate": "{}"}}'.format(max_min[1].split(' ')[0], max_min[0].split(' ')[0])
 
             outfile.write(template)
@@ -370,7 +370,7 @@ class CrashSeeder(object):
 
             points['points'].append([id, x, y])
 
-        with open(self.make_absolute(['pickup', 'points.json']), 'w+') as outfile:
+        with open(self.make_absolute(['pickup', 'points.json']), 'w') as outfile:
             list(map(append_point, result))
 
             content = re.sub(pattern, '', json.dumps(points))
