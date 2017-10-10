@@ -317,7 +317,7 @@ class CrashSeeder(object):
         start = timeit.default_timer()
         sde = self.make_absolute(['connections', creds['sde_connection_path']])
 
-        sql = '''SELECT max(crash_date) as max_date, min(crash_date) as max_date
+        sql = '''SELECT MAX(CAST(crash_date as varchar)) as max_date, MIN(CAST(crash_date as varchar)) as min_date
         FROM [DDACTS].[DDACTSadmin].[CRASHLOCATION]'''
 
         try:
