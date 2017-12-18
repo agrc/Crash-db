@@ -6,19 +6,21 @@ crashseeder
 the crashseeder module
 '''
 
-import arcpy
 import csv
 import glob
 import json
 import re
 import timeit
-from os.path import basename, splitext, join, sep, dirname
-from os import environ, makedirs, remove
+from os import makedirs, remove
+from os.path import basename, dirname, join, splitext
 from shutil import copy, copyfile, rmtree
 from time import strftime
+
+import arcpy
+
 from . import secrets
-from .models import Schema, Lookup
-from .services import Caster, BrickLayer
+from .models import Lookup, Schema
+from .services import BrickLayer, Caster
 
 
 class CrashSeeder(object):
@@ -66,7 +68,12 @@ class CrashSeeder(object):
                 reader = csv.DictReader(csv_file, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
                 for row in reader:
-                    items.append(self._etl_row(table_name, row))
+                    new_row = self.etl_row(table_name, row)
+
+                    if new_row is None:
+                        continue
+
+                    items.append(new_row)
 
             self.brick_layer.insert_rows(table_name, items)
             items = []
@@ -161,7 +168,9 @@ class CrashSeeder(object):
             lookup = Schema.rollup
             formatter = Schema.rollup_schema_ordering
         else:
-            raise Exception(file, 'Not a part of the crash, drivers, rollops convention')
+            self.logger.warn('Not a part of the crash, drivers, rollops convention at %s', file)
+
+            return None
 
         return self._etl_row_generic(row, lookup, input_keys, etl_keys, formatter)
 

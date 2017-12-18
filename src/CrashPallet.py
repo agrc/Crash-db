@@ -6,12 +6,13 @@ CrashPallet.py
 A module that contains the pallet to keep the crashmapping.utah.gov website fresh
 '''
 
+from subprocess import CalledProcessError, check_call
+from time import strftime
+
+from forklift.models import Pallet
+
 from crashdb import secrets
 from crashdb.crashseeder import CrashSeeder
-from forklift.models import Pallet
-from subprocess import CalledProcessError
-from subprocess import check_call
-from time import strftime
 
 
 class CrashPallet(Pallet):
