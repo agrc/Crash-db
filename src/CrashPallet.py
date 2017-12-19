@@ -9,10 +9,9 @@ A module that contains the pallet to keep the crashmapping.utah.gov website fres
 from subprocess import CalledProcessError, check_call
 from time import strftime
 
-from forklift.models import Pallet
-
 from crashdb import secrets
 from crashdb.crashseeder import CrashSeeder
+from forklift.models import Pallet
 
 
 class CrashPallet(Pallet):

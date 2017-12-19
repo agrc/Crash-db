@@ -6,25 +6,29 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Rollup]') AN
 DROP TABLE [Rollup]
 
 CREATE TABLE [Rollup](
-	[id] [int] NOT NULL,
-	[crash_date] [date] NULL,
-	[pedestrian] [bit] NULL,
-	[bicycle] [bit] NULL,
-	[motorcycle] [bit] NULL,
-	[improper_restraint] [bit] NULL,
-	[dui] [bit] NULL,
-	[intersection] [bit] NULL,
-	[animal_wild] [bit] NULL,
-	[animal_domestic] [bit] NULL,
-	[rollover] [bit] NULL,
-	[commercial_vehicle] [bit] NULL,
-	[teenager] [bit] NULL,
-	[elder] [bit] NULL,
-	[dark] [bit] NULL,
-	[unrestrained] [bit] NULL,
+    [id] [int] NOT NULL,
+    [crash_date] [date] NULL,
+    [pedestrian] [bit] NULL,
+    [bicycle] [bit] NULL,
+    [motorcycle] [bit] NULL,
+    [improper_restraint] [bit] NULL,
+    [dui] [bit] NULL,
+    [intersection] [bit] NULL,
+    [animal_wild] [bit] NULL,
+    [animal_domestic] [bit] NULL,
+    [rollover] [bit] NULL,
+    [commercial_vehicle] [bit] NULL,
+    [teenager] [bit] NULL,
+    [elder] [bit] NULL,
+    [dark] [bit] NULL,
+    [unrestrained] [bit] NULL,
+    [solo] [bit] NULL,
+    [distracted] [bit] NULL,
+    [drowsy] [bit] NULL,
+    [offroad] [bit] NULL,
  CONSTRAINT [PK_Rollup] PRIMARY KEY CLUSTERED
 (
-	[id] ASC
+    [id] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 

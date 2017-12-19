@@ -129,6 +129,22 @@ class Schema(object):
         'UNRESTRAINED': {
             'type': 'bit',
             'map': 'unrestrained'
+        },
+        'SINGLE_VEHICLE': {
+            'type': 'bit',
+            'map': 'solo'
+        },
+        'DISTRACTED_DRIVING': {
+            'type': 'bit',
+            'map': 'distracted'
+        },
+        'DROWSY_DRIVING': {
+            'type': 'bit',
+            'map': 'drowsy'
+        },
+        'ROADWAY_DEPARTURE': {
+            'type': 'bit',
+            'map': 'offroad'
         }
     }
 
@@ -150,7 +166,11 @@ class Schema(object):
             d['teenager'],
             d['elder'],
             d['dark'],
-            d['unrestrained']
+            d['unrestrained'],
+            d['solo'],
+            d['distracted'],
+            d['drowsy'],
+            d['offroad']
         ]
 
     rollup_input_keys = list(rollup.keys())
