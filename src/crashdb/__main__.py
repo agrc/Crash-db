@@ -14,7 +14,9 @@ Options:
 
 
 import sys
+
 from docopt import docopt
+
 from . import secrets
 from .crashseeder import CrashSeeder
 from .logger import Logger
@@ -36,16 +38,16 @@ def main():
         line_number = last_traceback[1]
         file_name = last_traceback[0].split(".")[0]
 
-        logger.log(traceback.format_exception(ex_cls, ex, tb), stdout=testing)
+        logger.error(traceback.format_exception(ex_cls, ex, tb))
 
         mailman.deliver('crash-db error', logger.print_log())
 
         if testing:
             traceback.print_exception(ex_cls, ex, tb)
 
-            logger.log(logger.print_log(), stdout=testing)
+            logger.info(logger.print_log(), stdout=testing)
 
-            logger.log(("line:%s (%s)" % (line_number, file_name)), stdout=testing)
+            logger.info(("line:%s (%s)" % (line_number, file_name)), stdout=testing)
 
     sys.excepthook = global_exception_handler
 

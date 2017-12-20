@@ -8,9 +8,12 @@ The basic services
 '''
 
 import datetime
-import pyodbc as odbc
 import os
+
 from dateutil.parser import parse
+
+import pyodbc as odbc
+
 from .models import Schema
 
 
@@ -140,8 +143,8 @@ class BrickLayer(object):
                 if i % self.batch_size == 0:
                     cursor.commit()
             except Exception as e:
-                self.logger.debug(command)
-                self.logger.debug(row)
+                self.logger.info(command)
+                self.logger.info(row)
 
                 cursor.close()
                 connection.close()
