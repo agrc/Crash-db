@@ -39,7 +39,7 @@ class CrashSeeder(object):
 
         self.brick_layer = BrickLayer(self.logger, creds=creds)
         files = self._get_files(location)
-
+        self.logger.info(files)
         self.truncate_tables(creds)
 
         #: seed feature type
@@ -94,11 +94,11 @@ class CrashSeeder(object):
         files = self._get_files(location)
         items = {'crash': {}}
 
-        for file in files:
-            file_name = splitext(basename(file))[0]
+        for csv_file in files:
+            file_name = splitext(basename(csv_file))[0]
             table_name = self._get_table_name(file_name)
 
-            with open(file, 'r') as csv_file:
+            with open(csv_file, 'r') as csv_file:
                 reader = csv.DictReader(csv_file)
 
                 if table_name == 'crash':
@@ -119,7 +119,7 @@ class CrashSeeder(object):
 
                             items[table_name][key] = len(row[key])
                 except:
-                    self.logger.info(file)
+                    self.logger.info(csv_file)
                     raise
 
         import pprint
@@ -148,8 +148,9 @@ class CrashSeeder(object):
         list(map(copy_files_local, files))
 
         files = glob.glob(join(script_dir, '*.csv'))
+        regex = r'(crash|drivers|rollups)_\d{4}'
 
-        return files
+        return [f for f in files if re.search(regex, f)]
 
     def _etl_row(self, table_name, row):
         if table_name == 'crash':
@@ -168,7 +169,7 @@ class CrashSeeder(object):
             lookup = Schema.rollup
             formatter = Schema.rollup_schema_ordering
         else:
-            self.logger.warn('Not a part of the crash, drivers, rollops convention at %s', file)
+            self.logger.warn('Not a part of the crash, drivers, rollops convention at %s', table_name)
 
             return None
 
@@ -213,7 +214,7 @@ class CrashSeeder(object):
     def create_database(self, where, who):
         self.logger.info('DO NOT FORGET TO UPDATE THE POINTS.JSON')
 
-        sr = self.make_absolute(['data/26912.prj'])
+        sr = arcpy.SpatialReference(26912)
 
         #: create sql drive and rollup tables
         with open(self.make_absolute([where[0]]), 'r') as f:
