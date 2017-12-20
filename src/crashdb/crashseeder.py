@@ -68,7 +68,7 @@ class CrashSeeder(object):
                 reader = csv.DictReader(csv_file, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
 
                 for row in reader:
-                    new_row = self.etl_row(table_name, row)
+                    new_row = self._etl_row(table_name, row)
 
                     if new_row is None:
                         continue
