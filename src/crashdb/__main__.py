@@ -24,7 +24,7 @@ from .mailman import MailMan
 
 
 def main():
-    arguments = docopt(__doc__, version='2.0.1')
+    arguments = docopt(__doc__, version='2.1.0')
     testing = arguments['--testing']
 
     mailman = MailMan('sgourley@utah.gov', testing=testing)

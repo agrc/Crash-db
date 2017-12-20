@@ -1,15 +1,11 @@
 # -*- encoding: utf8 -*-
 import glob
 import io
-from os.path import basename
-from os.path import dirname
-from os.path import join
-from os.path import splitext
-
-from setuptools import find_packages
-from setuptools import setup
-from setuptools.command.test import test as TestCommand
 import sys
+from os.path import basename, dirname, join, splitext
+
+from setuptools import find_packages, setup
+from setuptools.command.test import test as TestCommand
 
 
 def read(*names, **kwargs):
@@ -40,7 +36,7 @@ class Tox(TestCommand):
 
 setup(
     name="crashdb",
-    version="2.0.1",
+    version="2.1.0",
     license="MIT",
     description="ETL Crash Data",
     long_description="",
