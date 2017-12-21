@@ -67,7 +67,8 @@ setup(
     install_requires=[
         "python-dateutil==2.3",
         "docopt==0.6.2",
-        "pyproj==1.9.5.1"
+        "pyproj==1.9.5.1",
+        "google-api-python-client==1.6.4"
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],

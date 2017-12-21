@@ -62,3 +62,4 @@ src/dates.js
 src/points.json
 src/crashdb/pickup/dates.json
 src/crashdb/pickup/points.json
+src/ddacts-oauth.json
