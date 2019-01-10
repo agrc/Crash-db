@@ -4,7 +4,9 @@ dev = {
     'username': '',
     'password': '',
     'logs': 'folder path',
-    'mount_password': '',
+    'ftp_host': '',
+    'ftp_username': '',
+    'ftp_password': '',
     'place_location': 'the root to the crash location to place dates and points.json'
 }
 
@@ -14,8 +16,9 @@ stage = {
     'username': '',
     'password': '',
     'logs': 'folder path',
-    'mount_user': '',
-    'mount_password': '',
+    'ftp_host': '',
+    'ftp_username': '',
+    'ftp_password': '',
     'place_location': ''
 }
 
@@ -25,7 +28,8 @@ prod = {
     'username': '',
     'password': '',
     'logs': 'folder path',
-    'mount_user': '',
-    'mount_password': '',
+    'ftp_host': '',
+    'ftp_username': '',
+    'ftp_password': '',
     'place_location': ''
 }

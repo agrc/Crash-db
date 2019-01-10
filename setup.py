@@ -65,10 +65,11 @@ setup(
         # eg: "keyword1", "keyword2", "keyword3",
     ],
     install_requires=[
-        "python-dateutil==2.3",
+        "python-dateutil==2.7.5",
         "docopt==0.6.2",
-        "pyproj==1.9.5.1",
-        "google-api-python-client==1.6.4"
+        "pyproj==1.9.6",
+        "google-api-python-client==1.7.7",
+        "pysftp==0.2.9"
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],

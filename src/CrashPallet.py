@@ -9,7 +9,9 @@ A module that contains the pallet to keep the crashmapping.utah.gov website fres
 import os
 import re
 from glob import glob
+import pysftp
 from random import uniform
+from shutil import rmtree
 from subprocess import CalledProcessError, check_call
 from time import sleep, strftime
 
@@ -62,7 +64,7 @@ class AgrcDriver(object):
         backoff = 1
         while response is None:
             try:
-                status, response = request.next_chunk()
+                _, response = request.next_chunk()
             except errors.HttpError as e:
                 if e.resp.status in [404]:  # TODO restart on 410 gone
                     # Start the upload all over again.
@@ -184,25 +186,57 @@ class CrashPallet(Pallet):
 
         drive_service.update_file('18a9jKmFbq2_0zvY9aN5jdMpof5gE0xSG', files, 'text/csv')
 
+    def keep_file(self, file_path):
+        _, ext = os.path.splitext(os.path.basename(file_path))
+
+        return ext.lower() == '.csv'
+
     def ship(self):
-        self.log.info('mounting U drive')
+        ephemeral = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'ftp_data')
+
+        if os.path.exists(ephemeral):
+            rmtree(ephemeral)
+
+        os.makedirs(ephemeral)
+
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+
+        self.log.info('downloading ftp data')
         error = None
 
         try:
-            check_call(
-                ['net', 'use', 'U:', r'\\ftp.utah.gov\agrcftp', self.creds['mount_password'], '/USER:{}'.format(self.creds['mount_user']), '/PERSISTENT:YES'])
-        except CalledProcessError as e:
-            self.log.error('There was a problem mounting the drive %s', e.message, exc_info=True)
+            with pysftp.Connection(
+                     host=self.creds['ftp_host'],
+                     username=self.creds['ftp_username'],
+                     password=self.creds['ftp_password'],
+                     cnopts=cnopts) as sftp:
+
+                sftp.chdir(self.creds['ftp_directory'])
+                items = sftp.listdir()
+
+                self.log.debug('acting on {}'.format(','.join(items)))
+
+                csvs = [item for item in items if self.keep_file(item)]
+
+                self.log.debug('filtered to {}'.format(','.join(csvs)))
+
+                for file_path in csvs:
+                    self.log.debug('downloading {}'.format(file_path))
+                    sftp.get(file_path, os.path.join(ephemeral, os.path.basename(file_path)), preserve_mtime=True)
+        except Exception as e:
+            self.log.error('there was a problem with the ftp', e)
+            error = e
 
         try:
             dbseeder = CrashSeeder(self.log)
-            dbseeder.process('U:/collision', self.configuration)
+            dbseeder.process(ephemeral, self.configuration)
         except Exception as e:
             self.log.error('There was a problem shipping CrashPallet. %s', e, exc_info=True)
             error = e
 
         try:
-            files = glob(os.path.join('U:/collision', '*.csv'))
+            files = glob(os.path.join(ephemeral, '*.csv'))
             regex = r'(download)'
             download_file = [f for f in files if re.search(regex, f)]
 
@@ -210,11 +244,13 @@ class CrashPallet(Pallet):
                 self.refresh_drive_crash_download(download_file[0])
         except Exception as e:
             self.log.error('The download was not updated %s', e, exc_info=True)
+            error = e
 
         try:
-            check_call(['net', 'use', '/delete', 'U:'])
-        except CalledProcessError as e:
-            self.log.error('There was a problem unmounting the drive %s', e, exc_info=True)
+            rmtree(ephemeral)
+        except Exception as e:
+            self.log.error('Could not delete the ephemeral directory %s', e, exc_info=True)
+            error = e
 
         if error is not None:
             raise error
