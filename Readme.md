@@ -1,25 +1,28 @@
-[![Build Status](https://travis-ci.org/agrc/Crash-db.svg?branch=master)](https://travis-ci.org/agrc/Crash-db)
+# Crash DB
 
-Crash DB
-========
+[![Build Status](https://travis-ci.org/agrc/Crash-db.svg?branch=master)](https://travis-ci.org/agrc/Crash-db)
 
 A db seeder etl tool for crash data.
 
-### Install
+## Install
+
 1. git clone this repo
 1. cd into folder and run `./setup.py install`
 
-### Usage
+## Usage
+
 1. Get the csv's to use.
 1. Create a `.sde` connection to the database you want to seed. Place them in `crashdb/connections`
 1. Fill out `secrets.py`. Use the `secrets.sample.py` as an example.
 1. run `python -m crashdb create <configuration>` where `<configuration>` is `dev, stage, prod` to create the database
 1. run `python -m crashdb seed <source> <configuration>` where `<source>` is the path to the csv's `path/to/csv's` and `<configuration>` is `dev, stage, prod`. In dev, this is `crashdb\data\csv`
 
-### Tests
+## Tests
+
 `tox`
 
-### Problems
+## Problems
+
 `expecting string data` means the lookup value was not in the models table. Change batch size to 2 and look for a number where there should be a value. Add the number: None
 
 `string or binary data to be truncated` - run `python -m crashdb path/to/csv's --length` and adjust sql schema
@@ -30,7 +33,8 @@ A db seeder etl tool for crash data.
 
 The points.json are out of sync with the map service. The etl will create new points.json. The [Crash-web](https://github.com/agrc/Crash-web) has a python script that get's run on deploys to sync also. **If these do not work**, check the rest queries. If they are returning `ESRI_OID` instead of `OBJECTED` then the map service query layer needs to be updated. Only check the `OBJECTID` field as unique. **Remove all other checks** and republish.
 
-### Deployment
+## Deployment
+
 1. checkout repo
 1. create `secrets.py`
 1. make sure `pip` is installed
@@ -45,4 +49,4 @@ The points.json are out of sync with the map service. The etl will create new po
 1. User Map `DDACTSadmin` as a `db_owner` to `DDACTS` with the default schema of `DDACTSadmin`
 1. Connect to the `DDACTS` db as `DDACTSadmin` and execute `src\crashdb\data\sql\create_sql_tables.sql`
 1. Create CrashLocation fc
-2. This should all work by `dbseeder create dev` but probably needs pro or something i was missing
+1. This should all work by `dbseeder create dev` but probably needs pro or something i was missing
