@@ -1,0 +1,4 @@
+{
+  "python.pythonPath": "/Users/sgourley/.virtualenvs/sftp/bin/python",
+  "python.formatting.provider": "yapf"
+}
