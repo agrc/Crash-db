@@ -36,7 +36,7 @@ class Tox(TestCommand):
 
 setup(
     name="crashdb",
-    version="3.0.0",
+    version="3.0.1",
     license="MIT",
     description="ETL Crash Data",
     long_description="",
