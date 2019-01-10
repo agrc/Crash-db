@@ -118,7 +118,10 @@ class BrickLayer(object):
         from arcpy.da import InsertCursor
         with InsertCursor(self.crash_table, fields) as cursor:
             for row in rows:
-                cursor.insertRow(row)
+                try:
+                    cursor.insertRow(row)
+                except Exception as e:
+                    self.logger.info('could not insert {} {}', row, e)
 
     def insert_rows(self, table_name, rows):
         if table_name.lower() not in list(self.insert_statements.keys()):
