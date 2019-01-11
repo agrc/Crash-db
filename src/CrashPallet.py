@@ -58,6 +58,7 @@ class AgrcDriver(object):
                                      resumable=True)
 
         request = self.service.files().update(fileId=file_id,
+                                              supportsTeamDrives=True,
                                               media_body=media_body)
 
         response = None
