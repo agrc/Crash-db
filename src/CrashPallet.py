@@ -16,7 +16,7 @@ from subprocess import CalledProcessError, check_call
 from time import sleep, strftime
 
 import httplib2
-from apiclient import build
+from apiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from crashdb import secrets
 from crashdb.crashseeder import CrashSeeder
