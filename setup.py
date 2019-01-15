@@ -36,7 +36,7 @@ class Tox(TestCommand):
 
 setup(
     name="crashdb",
-    version="3.0.1",
+    version="3.0.2",
     license="MIT",
     description="ETL Crash Data",
     long_description="",
@@ -68,6 +68,8 @@ setup(
         "python-dateutil==2.7.5",
         "docopt==0.6.2",
         "pyproj==1.9.5.1",
+        "google-auth==1.6.2",
+        "google-auth-httplib2==0.0.3",
         "google-api-python-client==1.7.7",
         "pysftp==0.2.9"
     ],
