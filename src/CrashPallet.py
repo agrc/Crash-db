@@ -62,15 +62,20 @@ class CrashPallet(Pallet):
         return ready
 
     def refresh_drive_crash_download(self, download_file):
+    def refresh_drive_crash_download(self, download_file):
+        self.log.info('uploading file to drive')
+
         parent = os.path.dirname(__file__)
         secrets = os.path.join(parent, SERVICE_ACCOUNT_FILE)
+
         credentials = service_account.Credentials.from_service_account_file(secrets, scopes=SCOPES)
 
         service = build('drive', 'v3', credentials=credentials)
-        media_body = MediaFileUpload(download_file, mimetype='text/csv', resumable=True)
 
+        media_body = MediaFileUpload(download_file, mimetype='text/csv', resumable=True)
         service.files().update(fileId='18a9jKmFbq2_0zvY9aN5jdMpof5gE0xSG', supportsTeamDrives=True, media_body=media_body).execute()
 
+        self.log.info('upload finished')
     def keep_file(self, file_path):
         _, ext = os.path.splitext(os.path.basename(file_path))
 
@@ -132,8 +137,7 @@ class CrashPallet(Pallet):
         try:
             rmtree(ephemeral)
         except Exception as e:
-            self.log.error('Could not delete the ephemeral directory %s', e, exc_info=True)
-            error = e
+            self.log.warn('Could not delete the ephemeral directory %s', e, exc_info=True)
 
         if error is not None:
             raise error
