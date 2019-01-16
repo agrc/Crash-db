@@ -62,7 +62,6 @@ class CrashPallet(Pallet):
         return ready
 
     def refresh_drive_crash_download(self, download_file):
-    def refresh_drive_crash_download(self, download_file):
         self.log.info('uploading file to drive')
 
         parent = os.path.dirname(__file__)
@@ -76,6 +75,7 @@ class CrashPallet(Pallet):
         service.files().update(fileId='18a9jKmFbq2_0zvY9aN5jdMpof5gE0xSG', supportsTeamDrives=True, media_body=media_body).execute()
 
         self.log.info('upload finished')
+
     def keep_file(self, file_path):
         _, ext = os.path.splitext(os.path.basename(file_path))
 
@@ -84,6 +84,7 @@ class CrashPallet(Pallet):
     def ship(self):
         ephemeral = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'ftp_data')
 
+        error = None
         if os.path.exists(ephemeral):
             rmtree(ephemeral)
 
