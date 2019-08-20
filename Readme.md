@@ -4,7 +4,7 @@
 
 A db seeder etl tool for crash data.
 
-## Install
+## Development Install
 
 1. git clone this repo
 1. cd into folder and run `./setup.py install`
