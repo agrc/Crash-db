@@ -1,4 +1,4 @@
 {
-  "python.pythonPath": "/Users/sgourley/.virtualenvs/sftp/bin/python",
+  "python.pythonPath": "%localappdata\\ESRI\\conda\\envs\\ddacts\\python.exe",
   "python.formatting.provider": "yapf"
 }
