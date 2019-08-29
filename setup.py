@@ -67,7 +67,7 @@ setup(
     install_requires=[
         "python-dateutil==2.7.5",
         "docopt==0.6.2",
-        "pyproj==1.9.6",
+        "pyproj==2.2.2",
         "google-auth==1.6.2",
         "google-auth-httplib2==0.0.3",
         "google-api-python-client==1.7.7",
