@@ -42,11 +42,8 @@ The points.json are out of sync with the map service. The etl will create new po
 1. run `pip install ./` from the current working directory containing `setup.py`
 1. put connections and data folder inside `python\Lib\site-packages\crash_crashdb.egg\crashdb` if it's not already there
 
-### I stink at doc's Development
+### Database creation
 
-1. With SQL Server create a `DDACTSadmin` and `DDACTSread` user
-1. Run the `scripts\sql\create_db.sql` to create the `DDACTS` database. _You may need to modify paths based on sql server version/installation path_
-1. User Map `DDACTSadmin` as a `db_owner` to `DDACTS` with the default schema of `DDACTSadmin`
-1. Connect to the `DDACTS` db as `DDACTSadmin` and execute `src\crashdb\data\sql\create_sql_tables.sql`
-1. Create CrashLocation fc
-1. This should all work by `dbseeder create dev` but probably needs pro or something i was missing
+1. With SQL Server Management Studio, create a `DDACTSadmin` and `DDACTSread` user. Make `DDACTSadmin` a data owner and owner of the `DDACTSadmin` schema.
+1. Create an database connection in Pro to the database named `dev.sde`, using the `DDACTSadmin` user and put it in `src/crashdb/connections`.
+1. Run: `dbseeder create dev --testing`
