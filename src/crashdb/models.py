@@ -7,8 +7,10 @@ models
 The basic models
 '''
 
-from pyproj import Proj, transform
+from pyproj import Transformer
 
+
+transformer = Transformer.from_crs(26912, 3857)
 
 class Schema(object):
 
@@ -287,10 +289,7 @@ class Schema(object):
         if x is None or y is None:
             return (None, None)
 
-        input_system = Proj(init='epsg:26912')
-        ouput_system = Proj(init='epsg:3857')
-
-        value = transform(input_system, ouput_system, x, y)
+        value = transformer.transform(x, y)
         return value
 
     @staticmethod
