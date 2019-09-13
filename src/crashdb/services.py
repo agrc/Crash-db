@@ -121,7 +121,7 @@ class BrickLayer(object):
                 try:
                     cursor.insertRow(row)
                 except Exception as e:
-                    self.logger.info('could not insert {} {}', row, e)
+                    self.logger.info('could not insert {} {}'.format(row, e))
 
     def insert_rows(self, table_name, rows):
         if table_name.lower() not in list(self.insert_statements.keys()):
