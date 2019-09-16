@@ -248,7 +248,7 @@ class CrashSeeder(object):
             arcpy.CreateFeatureclass_management(sde, 'CrashLocation', 'POINT', spatial_reference=sr)
 
         except arcpy.ExecuteError as e:
-            if 'ERROR 000258' in e:
+            if 'ERROR 000258' in str(e):
                 self.logger.info('feature class exists. Deleting and trying again.')
                 arcpy.Delete_management(join(sde, 'CrashLocation'))
 
