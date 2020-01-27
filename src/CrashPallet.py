@@ -10,6 +10,7 @@ import os
 import re
 from glob import glob
 import pysftp
+import logging
 from random import uniform
 from shutil import rmtree
 from subprocess import CalledProcessError, check_call
@@ -36,6 +37,8 @@ class CrashPallet(Pallet):
         self.arcgis_services = [('Crash/Crashes', 'MapServer')]
 
     def build(self, configuration):
+        logging.getLogger('googleapicliet.discovery_cache').setLevel(logging.ERROR)
+
         if configuration is None:
             self.creds = secrets.prod
             self.configuration = 'prod'
@@ -61,27 +64,7 @@ class CrashPallet(Pallet):
 
         return ready
 
-    def refresh_drive_crash_download(self, download_file):
-        self.log.info('uploading file to drive')
-
-        parent = os.path.dirname(__file__)
-        secrets = os.path.join(parent, SERVICE_ACCOUNT_FILE)
-
-        credentials = service_account.Credentials.from_service_account_file(secrets, scopes=SCOPES)
-
-        service = build('drive', 'v3', credentials=credentials)
-
-        media_body = MediaFileUpload(download_file, mimetype='text/csv', resumable=True)
-        service.files().update(fileId='18a9jKmFbq2_0zvY9aN5jdMpof5gE0xSG', supportsTeamDrives=True, media_body=media_body).execute()
-
-        self.log.info('upload finished')
-
-    def keep_file(self, file_path):
-        _, ext = os.path.splitext(os.path.basename(file_path))
-
-        return ext.lower() == '.csv'
-
-    def ship(self):
+    def _download_files(self):
         ephemeral = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'ftp_data')
 
         error = None
@@ -117,22 +100,55 @@ class CrashPallet(Pallet):
             self.log.error('there was a problem with the ftp', e)
             error = e
 
-        try:
-            dbseeder = CrashSeeder(self.log)
-            dbseeder.process(ephemeral, self.configuration)
-        except Exception as e:
-            self.log.error('There was a problem shipping CrashPallet. %s', e, exc_info=True)
-            error = e
+        return ephemeral
+
+    def refresh_drive_crash_download(self, ephemeral):
+        self.log.info('uploading file to drive')
 
         try:
             files = glob(os.path.join(ephemeral, '*.csv'))
             regex = r'(download)'
             download_file = [f for f in files if re.search(regex, f)]
 
-            if download_file and len(download_file) == 1:
-                self.refresh_drive_crash_download(download_file[0])
+            if not download_file or len(download_file) != 1:
+                self.log.warn('not uploading drive file')
+
+                return
+
+            upload_file = download_file[0]
+
+            parent = os.path.dirname(__file__)
+            secrets = os.path.join(parent, SERVICE_ACCOUNT_FILE)
+
+            credentials = service_account.Credentials.from_service_account_file(secrets, scopes=SCOPES)
+
+            service = build('drive', 'v3', credentials=credentials)
+
+            media_body = MediaFileUpload(upload_file, mimetype='text/csv', resumable=True)
+            service.files().update(fileId='18a9jKmFbq2_0zvY9aN5jdMpof5gE0xSG', supportsTeamDrives=True, media_body=media_body).execute()
+
+            self.log.info('upload finished')
+
+            return True
         except Exception as e:
             self.log.error('The download was not updated %s', e, exc_info=True)
+
+            return False
+
+    def keep_file(self, file_path):
+        _, ext = os.path.splitext(os.path.basename(file_path))
+
+        return ext.lower() == '.csv'
+
+    def ship(self):
+        ephemeral = self._download_files()
+        error = None
+
+        try:
+            dbseeder = CrashSeeder(self.log)
+            dbseeder.process(ephemeral, self.configuration)
+        except Exception as e:
+            self.log.error('There was a problem shipping CrashPallet. %s', e, exc_info=True)
             error = e
 
         try:
@@ -142,3 +158,41 @@ class CrashPallet(Pallet):
 
         if error is not None:
             raise error
+
+if __name__ == "__main__":
+    '''
+    optional arguments:
+    1 - forklift configuration (Production | Dev)
+        Defaults to Dev.
+    2 - action: (download | ship)
+        Defaults to ship
+    '''
+    import sys
+
+    try:
+        config = sys.argv[1]
+    except IndexError:
+        config = 'Dev'
+
+    try:
+        action = sys.argv[2]
+    except IndexError:
+        action = None
+
+    pallet = CrashPallet()
+    pallet.configure_standalone_logging()
+    pallet.build(config)
+
+    if action and action == 'download':
+        ephemeral = pallet._download_files()
+
+
+        if pallet.refresh_drive_crash_download(ephemeral):
+            print('download completed')
+            sys.exit()
+
+        print('drive refresh failed')
+        sys.exit()
+
+    pallet.ship()
+    print(pallet.success)
