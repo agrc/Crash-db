@@ -94,7 +94,7 @@ class BrickLayer(object):
         if not self.connection_string:
             script_dir = os.path.dirname(__file__)
             self.connection_string = (
-                'DRIVER={SQL Server};' +
+                'DRIVER={ODBC Driver 17 for SQL Server};' +
                 'SERVER={};'.format(creds['server']) +
                 'DATABASE=DDACTS;' +
                 'UID={};'.format(creds['username']) +
