@@ -17,6 +17,8 @@ from shutil import copy, copyfile, rmtree
 from time import strftime
 
 import arcpy
+from google import oauth2
+from google.cloud import storage
 
 from . import secrets
 from .models import Lookup, Schema
@@ -36,6 +38,9 @@ class CrashSeeder(object):
             creds = secrets.stage
         elif who == 'prod':
             creds = secrets.prod
+
+        credentials = oauth2.service_account.Credentials.from_service_account_file(self.make_absolute([creds['service_account_key_file']]))
+        self.storage_client = storage.Client(credentials=credentials)
 
         self.brick_layer = BrickLayer(self.logger, creds=creds)
         files = self._get_files(location)
@@ -86,7 +91,7 @@ class CrashSeeder(object):
 
         self.create_dates_js(creds)
         self.create_points_json(creds)
-        self.place_files(creds['place_location'])
+        self.place_files(creds['bucket_name'])
 
         self.logger.info('finished')
 
@@ -258,19 +263,14 @@ class CrashSeeder(object):
         arcpy.env.workspace = sde
 
         #: name, type, null, length
-        fields = [
-            ['crash_id', 'LONG', 'NON_NULLABLE'], ['crash_date', 'DATE', 'NULLABLE'],
-            ['crash_year', 'SHORT', 'NULLABLE'], ['crash_month', 'SHORT', 'NULLABLE'],
-            ['crash_day', 'SHORT', 'NULLABLE'], ['crash_hour', 'SHORT', 'NULLABLE'],
-            ['crash_minute', 'SHORT', 'NULLABLE'], ['construction', 'SHORT', 'NULLABLE'],
-            ['weather_condition', 'TEXT', 'NULLABLE', 50], ['road_condition', 'TEXT', 'NULLABLE', 50],
-            ['event', 'TEXT', 'NULLABLE', 100], ['collision_type', 'TEXT', 'NULLABLE', 50],
-            ['severity', 'TEXT', 'NULLABLE', 50], ['case_number', 'TEXT', 'NULLABLE', 400],
-            ['officer_name', 'TEXT', 'NULLABLE', 100], ['officer_department', 'TEXT', 'NULLABLE', 100],
-            ['road_name', 'TEXT', 'NULLABLE', 100], ['road_type', 'TEXT', 'NULLABLE', 20],
-            ['route_number', 'LONG', 'NULLABLE'], ['milepost', 'DOUBLE', 'NULLABLE'], ['city', 'TEXT', 'NULLABLE', 50],
-            ['county', 'TEXT', 'NULLABLE', 25], ['utm_x', 'DOUBLE', 'NULLABLE'], ['utm_y', 'DOUBLE', 'NULLABLE']
-        ]
+        fields = [['crash_id', 'LONG', 'NON_NULLABLE'], ['crash_date', 'DATE', 'NULLABLE'], ['crash_year', 'SHORT', 'NULLABLE'],
+                  ['crash_month', 'SHORT', 'NULLABLE'], ['crash_day', 'SHORT', 'NULLABLE'], ['crash_hour', 'SHORT', 'NULLABLE'],
+                  ['crash_minute', 'SHORT', 'NULLABLE'], ['construction', 'SHORT', 'NULLABLE'], ['weather_condition', 'TEXT', 'NULLABLE', 50],
+                  ['road_condition', 'TEXT', 'NULLABLE', 50], ['event', 'TEXT', 'NULLABLE', 100], ['collision_type', 'TEXT', 'NULLABLE', 50],
+                  ['severity', 'TEXT', 'NULLABLE', 50], ['case_number', 'TEXT', 'NULLABLE', 400], ['officer_name', 'TEXT', 'NULLABLE', 100],
+                  ['officer_department', 'TEXT', 'NULLABLE', 100], ['road_name', 'TEXT', 'NULLABLE', 100], ['road_type', 'TEXT', 'NULLABLE', 20],
+                  ['route_number', 'LONG', 'NULLABLE'], ['milepost', 'DOUBLE', 'NULLABLE'], ['city', 'TEXT', 'NULLABLE', 50],
+                  ['county', 'TEXT', 'NULLABLE', 25], ['utm_x', 'DOUBLE', 'NULLABLE'], ['utm_y', 'DOUBLE', 'NULLABLE']]
 
         for field in fields:
             self.add_field('CrashLocation', field)
@@ -389,31 +389,26 @@ class CrashSeeder(object):
             end = timeit.default_timer()
             self.logger.info('processing time: {}'.format(end - start))
 
-    def place_files(self, place_location):
-        points = join(place_location, 'points.json')
-        dates = join(place_location, 'app', 'resources', 'dates.json')
-
-        self.logger.info('placing points {}'.format(points))
-        self.logger.info('placing dates {}'.format(dates))
-
+    def place_files(self, bucket_name):
         try:
-            remove(points)
+            self.logger.info('uploading points to gcp bucket')
+            self._upload_blob(bucket_name, self.make_absolute(['pickup', 'points.json']), 'points.json')
         except Exception as e:
-            self.logger.warn('could not remove old points: %s', e, exc_info=True)
-        try:
-            remove(dates)
-        except Exception as e:
-            self.logger.warn('could not remove old dates: %s', e, exc_info=True)
+            self.logger.error('could not upload new points')
 
         try:
-            copyfile(self.make_absolute(['pickup', 'dates.json']), dates)
+            self.logger.info('uploading dates to gcp bucket')
+            self._upload_blob(bucket_name, self.make_absolute(['pickup', 'dates.json']), 'dates.json')
         except Exception as e:
-            self.logger.error('could not copy new dates: %s', e, exc_info=True)
-        try:
-            copyfile(self.make_absolute(['pickup', 'points.json']), points)
-        except Exception as e:
-            self.logger.error('could not copy new points: %s', e, exc_info=True)
-            raise e
+            self.logger.error('could not upload new dates')
+
+    def _upload_blob(self, bucket_name, source_file_name, destination_blob_name):
+        """Uploads a file to the bucket."""
+
+        bucket = self.storage_client.bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+
+        blob.upload_from_filename(source_file_name)
 
     def make_absolute(self, fragments):
         parent = dirname(__file__)

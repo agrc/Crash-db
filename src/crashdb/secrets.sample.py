@@ -7,7 +7,8 @@ dev = {
     'ftp_host': '',
     'ftp_username': '',
     'ftp_password': '',
-    'place_location': 'the root to the crash location to place dates and points.json'
+    'bucket_name': '',
+    'service_account_key_file': ''
 }
 
 stage = {
@@ -19,7 +20,8 @@ stage = {
     'ftp_host': '',
     'ftp_username': '',
     'ftp_password': '',
-    'place_location': ''
+    'bucket_name': '',
+    'service_account_key_file': ''
 }
 
 prod = {
@@ -31,5 +33,6 @@ prod = {
     'ftp_host': '',
     'ftp_username': '',
     'ftp_password': '',
-    'place_location': ''
+    'bucket_name': '',
+    'service_account_key_file': ''
 }
