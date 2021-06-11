@@ -63,3 +63,4 @@ src/points.json
 src/crashdb/pickup/dates.json
 src/crashdb/pickup/points.json
 src/ddacts-oauth.json
+src/crashdb/service-account-forklift-*.json
